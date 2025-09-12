@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Professor - JiuLOG</title>
+<link rel="stylesheet" href="css/professor.css">
+<script src="js/professor.js" defer></script>
+</head>
+<body>
+<header>
+    <h2 id="professor_nome">Bem-vindo, Professor</h2>
+    <a href="php/logout.php"><button class="logout-btn">Deslogar</button></a>
+</header>
+<div class="container">
+    <h3>Adicionar novo horário</h3>
+    <form method="POST" action="php/aula.php">
+        <input type="text" name="nome_aula" placeholder="Nome da aula (ex: Aula das 7:00)" required>
+        <select name="dia_semana" required>
+            <option value="">Escolha o dia</option>
+            <option value="Segunda">Segunda</option>
+            <option value="Terça">Terça</option>
+            <option value="Quarta">Quarta</option>
+            <option value="Quinta">Quinta</option>
+            <option value="Sexta">Sexta</option>
+            <option value="Sábado">Sábado</option>
+            <option value="Domingo">Domingo</option>
+        </select>
+        <input type="time" name="hora" required>
+        <button type="submit" name="add_aula">Adicionar</button>
+    </form>
+
+    <h3>Horários existentes</h3>
+    <div id="horarios_container">
+        <!-- JS preencherá os horários aqui -->
+    </div>
+
+    <h3>Check-ins pendentes</h3>
+    <div id="checkins_container">
+        <!-- JS preencherá os check-ins pendentes aqui -->
+    </div>
+</div>
+</body>
+</html>

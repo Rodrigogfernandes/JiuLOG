@@ -1,0 +1,43 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    color: #000;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #e60000;
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+}
+
+.container {
+    padding: 20px;
+}
+
+.horario, .checkin {
+    border: 1px solid #e60000;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+button.logout-btn {
+    background-color: #e60000; /* vermelho padrão */
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    float: right; /* botão no canto direito do header */
+    margin-top: -35px; /* ajustar se necessário */
+    transition: all 0.2s ease-in-out;
+}
+
+button.logout-btn:hover {
+    background-color: #b30000; /* vermelho mais escuro ao passar mouse */
+    transform: scale(1.05);
+}

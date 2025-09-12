@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Aluno - JiuLOG</title>
+<link rel="stylesheet" href="css/aluno.css">
+<script src="js/aluno.js" defer></script>
+</head>
+<body>
+<header>
+    <h2 id="aluno_nome">Bem-vindo, Aluno</h2>
+    <a href="php/logout.php"><button class="logout-btn">Deslogar</button></a>
+</header>
+<div class="container">
+    <p>Faltam <strong id="aulas_faltando">0</strong> aulas para a próxima graduação</p>
+
+    <h3>Horários disponíveis para check-in:</h3>
+    <div id="horarios_container">
+        <!-- JS irá preencher os horários aqui -->
+    </div>
+
+    <h3>Check-ins realizados:</h3>
+    <div id="checkins_container">
+        <!-- JS irá preencher os check-ins aqui -->
+    </div>
+</div>
+</body>
+</html>
