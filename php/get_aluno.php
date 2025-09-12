@@ -8,7 +8,7 @@ if(!isset($_SESSION['tipo']) || $_SESSION['tipo'] != 'aluno') {
 
 $aluno_id = $_SESSION['user_id'];
 
-// Dados do aluno
+// Pegar dados do aluno
 $res = $conn->query("SELECT nome, aulas_faltando FROM usuarios WHERE id=$aluno_id");
 $aluno = $res->fetch_assoc();
 
@@ -30,9 +30,16 @@ $checkins_res = $conn->query("SELECT c.id, h.nome_aula, h.dia_semana, h.hora, c.
                               WHERE c.aluno_id=$aluno_id 
                               ORDER BY c.data DESC");
 $checkins = [];
+$checkins_aprovados = 0;
 while($row = $checkins_res->fetch_assoc()){
     $checkins[] = $row;
+    if($row['status'] === 'aprovado') {
+        $checkins_aprovados++;
+    }
 }
+
+// Atualizar aulas faltando considerando check-ins aprovados
+$aluno['aulas_faltando'] = max(0, $aluno['aulas_faltando'] - $checkins_aprovados);
 
 // Retornar JSON
 echo json_encode([
