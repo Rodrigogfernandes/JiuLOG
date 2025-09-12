@@ -7,29 +7,46 @@ window.addEventListener('load', () => {
         const horariosContainer = document.getElementById('horarios_container');
         const checkinsContainer = document.getElementById('checkins_container');
 
-        // Definir nome e aulas faltando
         alunoNome.textContent = `Bem-vindo, ${data.aluno.nome}`;
-        aulasFaltando.textContent = data.aluno.aulas_faltando;
+        aulasFaltando.textContent = `Faltam ${data.aluno.aulas_faltando} aulas para a próxima graduação`;
 
-        // Listar horários disponíveis
-        data.horarios.forEach(h => {
+        horariosContainer.innerHTML = '';
+        checkinsContainer.innerHTML = '';
+
+        const hoje = new Date();
+        const dataHoje = hoje.toISOString().split('T')[0];
+
+        // Horários do dia atual
+        const horariosHoje = data.horarios;
+
+        horariosHoje.forEach(h => {
+            // Checa se já existe check-in para este horário hoje
+            const checkinHoje = data.checkins.find(c => c.horario_id == h.id && c.data == dataHoje);
+
             const div = document.createElement('div');
             div.classList.add('horario');
+
+        if(checkinHoje){
+            div.classList.add('checkin-feito'); // Adiciona classe para CSS
             div.innerHTML = `
-                <strong>${h.nome_aula}</strong><br>
-                Dia: ${h.dia_semana} | Horário: ${h.hora}
+                <strong>${h.nome_aula}</strong> - ${h.hora}<br>
+                <em>Você já fez check-in nesta aula hoje.</em>
+            `;
+        } else {
+            div.innerHTML = `
+                <strong>${h.nome_aula}</strong> - ${h.hora}<br>
                 <form method="POST" action="php/checkin.php">
                     <input type="hidden" name="horario_id" value="${h.id}">
-                    <input type="date" name="data" required
-                           min="${new Date().toISOString().split('T')[0]}"
-                           max="${new Date(Date.now()+86400000).toISOString().split('T')[0]}">
+                    <input type="date" name="data" value="${dataHoje}" readonly>
                     <button type="submit">Fazer Check-in</button>
                 </form>
             `;
+        }
+
             horariosContainer.appendChild(div);
         });
 
-        // Listar check-ins
+        // Lista de check-ins
         data.checkins.forEach(c => {
             const div = document.createElement('div');
             div.classList.add('checkin');
