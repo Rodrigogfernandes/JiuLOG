@@ -19,7 +19,7 @@ $conn->query("UPDATE usuarios
               WHERE id=$aluno_id AND aulas_faltando <= 0");
 
 // Dados do aluno
-$res = $conn->query("SELECT nome, aulas_faltando FROM usuarios WHERE id=$aluno_id");
+$res = $conn->query("SELECT nome, aulas_faltando, faixa, graus FROM usuarios WHERE id=$aluno_id");
 $aluno = $res->fetch_assoc();
 
 // Horários de hoje

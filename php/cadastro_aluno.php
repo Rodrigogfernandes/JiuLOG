@@ -5,15 +5,15 @@ $nome = $_POST['nome'];
 $email = $_POST['email'];
 $senha = $_POST['senha'];
 
-// Verifica se o email já existe
+// Verificar se email já existe
 $check = $conn->query("SELECT * FROM usuarios WHERE email='$email'");
-if($check->num_rows > 0){
+if ($check->num_rows > 0) {
     die("Email já cadastrado!");
 }
 
-// Insere o novo aluno com aulas_faltando e total_aulas_graduacao = 55
-$sql = "INSERT INTO usuarios (nome,email,senha,tipo,aulas_faltando,total_aulas_graduacao) 
-        VALUES ('$nome','$email','$senha','aluno',55,55)";
+// Inserir aluno novo já com faixa branca, 0 graus e 55 aulas faltando
+$sql = "INSERT INTO usuarios (nome, email, senha, tipo, faixa, graus, aulas_faltando) 
+        VALUES ('$nome', '$email', '$senha', 'aluno', 'Branca', 0, 55)";
 $conn->query($sql);
 
 header("Location: ../login_aluno.html");
