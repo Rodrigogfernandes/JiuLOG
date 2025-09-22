@@ -9,6 +9,13 @@
 <body>
 <div class="container">
     <h2>Login Aluno</h2>
+
+    <!-- Aviso de erro -->
+    <div id="erro" style="display:none; color:#fff; background:#e60000; padding:10px; border-radius:5px; margin-bottom:10px;">
+        Email ou senha incorretos!
+    </div>
+
+    
     
     <form method="POST" action="php/login_aluno.php">
         <input type="email" name="email" placeholder="Email" required>
@@ -20,5 +27,22 @@
     <button onclick="window.location.href='cadastro_aluno.html'">Cadastrar como Aluno</button>
     <a href="index.html"><button>Voltar</button></a>
 </div>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('erro')) {
+        const erro = document.getElementById('erro');
+        erro.style.display = 'block';
+
+        // depois de 10 segundos, esconde a mensagem
+        setTimeout(() => {
+            erro.style.display = 'none';
+        }, 10000);
+
+        // Remove o parâmetro da URL sem recarregar a página
+        params.delete('erro');
+        const newUrl = window.location.pathname + '?' + params.toString();
+        window.history.replaceState({}, '', newUrl);
+    }
+</script>
 </body>
 </html>

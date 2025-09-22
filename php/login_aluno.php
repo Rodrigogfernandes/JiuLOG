@@ -14,6 +14,7 @@ if($result->num_rows > 0){
     $_SESSION['tipo'] = $user['tipo'];
     header("Location: ../dashboard_aluno.html");
 } else {
-    die("Email ou senha incorretos!");
+    header("Location: ../login_aluno.html?erro=1");
+    exit;
 }
 ?>
