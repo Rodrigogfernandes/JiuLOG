@@ -12,7 +12,9 @@
     <h2 id="professor_nome">Bem-vindo, Professor</h2>
     <a href="php/logout.php"><button class="logout-btn">Deslogar</button></a>
 </header>
+
 <div class="container">
+    <!-- Adicionar horário -->
     <h3>Adicionar novo horário</h3>
     <form method="POST" action="php/aula.php">
         <input type="text" name="nome_aula" placeholder="Nome da aula (ex: Aula das 7:00)" required>
@@ -30,15 +32,18 @@
         <button type="submit" name="add_aula">Adicionar</button>
     </form>
 
+    <!-- Horários existentes -->
     <h3>Horários existentes</h3>
-    <div id="horarios_container">
-        <!-- JS preencherá os horários aqui -->
-    </div>
+    <div id="horarios_container"></div>
 
+    <!-- Check-ins pendentes -->
     <h3>Check-ins pendentes</h3>
-    <div id="checkins_container">
-        <!-- JS preencherá os check-ins pendentes aqui -->
-    </div>
+    <div id="checkins_container"></div>
+
+    <!-- Alterar graduação -->
+    <h3>Alunos</h3>
+    <div id="alunos_container"></div>
 </div>
+
 </body>
 </html>
