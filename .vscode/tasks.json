@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start PHP Server",
+      "type": "shell",
+      "command": "${workspaceFolder}\\run-server.bat",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Import DB (schema)",
+      "type": "shell",
+      "command": "${workspaceFolder}\\import-db.bat",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}

@@ -1,17 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JiuLOG - Bem-vindo</title>
-<link rel="stylesheet" href="css/login.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JiuLOG - Sistema de Gestão de Jiu-Jitsu</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-<div class="container">
-    <h2>Bem-vindo ao JiuLOG</h2>
-    <p>Escolha seu tipo de login:</p>
-    <button onclick="window.location.href='login_aluno.html'">Sou Aluno</button>
-    <button onclick="window.location.href='login_professor.html'">Sou Professor</button>
-</div>
+    <!-- Partículas flutuantes para efeito visual -->
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-fist-raised"></i>
+            JiuLOG
+        </div>
+        <p class="subtitle">Sistema de Gestão para Academia de Jiu-Jitsu</p>
+        
+        <div class="button-container">
+            <button class="btn" onclick="window.location.href='login_aluno.html'">
+                <i class="fas fa-user-graduate"></i>
+                Sou Aluno
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='login_professor.html'">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Sou Professor
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Criar partículas flutuantes
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Tamanho aleatório
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                // Posição horizontal aleatória
+                particle.style.left = Math.random() * 100 + '%';
+                
+                // Delay aleatório para animação
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Inicializar partículas quando a página carregar
+        document.addEventListener('DOMContentLoaded', createParticles);
+        
+        // Adicionar efeito de hover nos botões
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
 </body>
 </html>

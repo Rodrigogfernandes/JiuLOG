@@ -1,29 +1,78 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Aluno - JiuLOG</title>
-<link rel="stylesheet" href="css/aluno.css">
-<script src="js/aluno.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Aluno - JiuLOG</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="js/aluno.js" defer></script>
 </head>
 <body>
-<header>
-    <h2 id="aluno_nome">Bem-vindo, Aluno</h2>
-    <a href="php/logout.php"><button class="logout-btn">Deslogar</button></a>
-</header>
-<div class="container">
-    <p id="aulas_faltando"></p>
+    <!-- Partículas flutuantes -->
+    <div class="particles" id="particles"></div>
+    
+    <header>
+        <h2 id="aluno_nome">
+            <i class="fas fa-user-graduate"></i>
+            Bem-vindo, Aluno
+        </h2>
+        <a href="php/logout.php" class="btn logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Deslogar
+        </a>
+    </header>
+    
+    <div class="container-dashboard">
+        <!-- Status das aulas -->
+        <div class="card">
+            <h3><i class="fas fa-chart-line"></i> Status das Aulas</h3>
+            <p id="aulas_faltando" class="text-center"></p>
+        </div>
 
-    <h3>Horários disponíveis para check-in:</h3>
-    <div id="horarios_container">
-        <!-- JS irá preencher os horários aqui -->
+        <!-- Horários disponíveis -->
+        <div class="card">
+            <h3><i class="fas fa-clock"></i> Horários Disponíveis para Check-in</h3>
+            <div id="horarios_container" class="grid grid-2">
+                <!-- JS irá preencher os horários aqui -->
+            </div>
+        </div>
+
+        <!-- Check-ins realizados -->
+        <div class="card">
+            <h3><i class="fas fa-check-circle"></i> Check-ins Realizados</h3>
+            <div id="checkins_container" class="grid grid-2">
+                <!-- JS irá preencher os check-ins aqui -->
+            </div>
+        </div>
     </div>
 
-    <h3>Check-ins realizados:</h3>
-    <div id="checkins_container">
-        <!-- JS irá preencher os check-ins aqui -->
-    </div>
-</div>
+    <script>
+        // Criar partículas flutuantes
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 10;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 3 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Inicializar partículas
+        document.addEventListener('DOMContentLoaded', createParticles);
+    </script>
 </body>
 </html>

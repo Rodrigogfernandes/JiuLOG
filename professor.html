@@ -1,49 +1,137 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Professor - JiuLOG</title>
-<link rel="stylesheet" href="css/professor.css">
-<script src="js/professor.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Mestre - JiuLOG</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="js/professor.js" defer></script>
 </head>
+
 <body>
-<header>
-    <h2 id="professor_nome">Bem-vindo, Professor</h2>
-    <a href="php/logout.php"><button class="logout-btn">Deslogar</button></a>
-</header>
+    <!-- Partículas flutuantes -->
+    <div class="particles" id="particles"></div>
 
-<div class="container">
-    <!-- Adicionar horário -->
-    <h3>Adicionar novo horário</h3>
-    <form method="POST" action="php/aula.php">
-        <input type="text" name="nome_aula" placeholder="Nome da aula (ex: Aula das 7:00)" required>
-        <select name="dia_semana" required>
-            <option value="">Escolha o dia</option>
-            <option value="Segunda">Segunda</option>
-            <option value="Terça">Terça</option>
-            <option value="Quarta">Quarta</option>
-            <option value="Quinta">Quinta</option>
-            <option value="Sexta">Sexta</option>
-            <option value="Sábado">Sábado</option>
-            <option value="Domingo">Domingo</option>
-        </select>
-        <input type="time" name="hora" required>
-        <button type="submit" name="add_aula">Adicionar</button>
-    </form>
+    <header>
+        <h2>
+            <i class="fas fa-chalkboard-teacher"></i>
+            Bem-vindo, Mestre <span id="professor_nome"></span>
+        </h2>
+        <div>
+            <a href="php/novo_aluno.php" class="novo-aluno-btn">
+                <i class="fas fa-user-plus"></i>
+                Novo Aluno
+            </a>
+            <a href="php/logout.php" class="btn logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Deslogar
+            </a>
+        </div>
+    </header>
 
-    <!-- Horários existentes -->
-    <h3>Horários existentes</h3>
-    <div id="horarios_container"></div>
+    <div class="container-dashboard">
 
-    <!-- Check-ins pendentes -->
-    <h3>Check-ins pendentes</h3>
-    <div id="checkins_container"></div>
+        <!-- Check-ins pendentes -->
+        <div class="card">
+            <h3><i class="fas fa-clock"></i> Check-ins Pendentes</h3>
+            <div id="checkins_container" class="grid grid-2">
+                <!-- JS irá preencher os check-ins aqui -->
+            </div>
+        </div>
 
-    <!-- Alterar graduação -->
-    <h3>Alunos</h3>
-    <div id="alunos_container"></div>
-</div>
+        <!-- Encontrar Aluno -->
+        <div class="card">
+            <h3><i class="fas fa-search"></i> Encontrar Aluno</h3>
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Digite o nome ou email do aluno..." autocomplete="off" spellcheck="false">
+            </div>
+            <div id="search-results" class="search-results" style="display: none;">
+                <!-- Resultados da busca aparecerão aqui -->
+            </div>
+        </div>
 
+        <!-- Gerenciar aluno -->
+        <div class="card">
+            <h3><i class="fas fa-users"></i> Gerenciar Aluno Selecionado</h3>
+            <div id="alunos_container" class="grid grid-3">
+                <!-- JS irá preencher os alunos aqui -->
+            </div>
+
+
+
+        </div>
+<!-- 
+        Adicionar novo horário
+        <div class="card" id="card-novo-horario">
+            <h3><i class="fas fa-plus-circle"></i> Adicionar Novo Horário</h3>
+            <form method="POST" action="php/aula.php">
+                <div class="form-group">
+                    <input type="text" name="nome_aula" placeholder="Nome da aula (ex: Aula das 7:00)" required>
+                </div>
+                <div class="form-group">
+                    <select name="dia_semana" required>
+                        <option value="">Escolha o dia da semana</option>
+                        <option value="Segunda">Segunda-feira</option>
+                        <option value="Terça">Terça-feira</option>
+                        <option value="Quarta">Quarta-feira</option>
+                        <option value="Quinta">Quinta-feira</option>
+                        <option value="Sexta">Sexta-feira</option>
+                        <option value="Sábado">Sábado</option>
+                        <option value="Domingo">Domingo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="time" name="hora" required>
+                </div>
+                <button type="submit" name="add_aula" class="btn w-100">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Horário
+                </button>
+            </form>
+        </div> -->
+
+        <!-- Horários existentes
+        <div class="card">
+            <h3><i class="fas fa-calendar-alt"></i> Horários Existentes</h3>
+            <div id="horarios_container" class="grid grid-2">
+                JS irá preencher os horários aqui
+            </div>
+        </div> -->
+
+
+
+
+    </div>
+
+    <script>
+        // Criar partículas flutuantes
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 10;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                const size = Math.random() * 3 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Inicializar partículas
+        document.addEventListener('DOMContentLoaded', createParticles);
+    </script>
 </body>
+
 </html>
