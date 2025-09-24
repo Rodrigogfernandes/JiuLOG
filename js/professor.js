@@ -178,7 +178,7 @@ window.addEventListener('load', () => {
                     <div class="aluno-horarios-lista" id="aluno-horarios-lista"></div>
                     <div class="aluno-horarios-form" id="aluno-horarios-form">
                         <h5 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-plus-circle"></i> Adicionar Novo Horário</h5>
-                        <form method="POST" action="php/atribuir_horario.php">
+                        <form id="form-adicionar-horario" method="POST" action="php/atribuir_horario.php">
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Nome da aula</label>
@@ -207,7 +207,7 @@ window.addEventListener('load', () => {
                         </form>
                     </div>
                 </div>
-                <form method="POST" action="php/alterar_faixa.php" class="aluno-form">
+                <form class="aluno-form" id="form-atualiza-aluno">
                     <input type="hidden" name="aluno_id" value="${aluno.id}">
                     <div class="form-row">
                         <div class="form-group">
@@ -271,10 +271,63 @@ window.addEventListener('load', () => {
                         if (lista) {
                             if (info && Array.isArray(info.horarios) && info.horarios.length) {
                                 lista.innerHTML = info.horarios.map(h => `
-                                    <div class=\"item-list\" style=\"margin-bottom:.5rem\"> 
-                                        <div class=\"item\" style=\"padding:.5rem 0\"><strong>${h.nome_aula}</strong> — ${h.dia_semana} às ${h.hora}</div>
+                                    <div class="horario-item">
+                                        <div class="info">
+                                            <strong>${h.nome_aula}</strong>
+                                            <span>— ${h.dia_semana} às ${h.hora}</span>
+                                        </div>
+                                        <div class="horario-actions">
+                                            <button type="button" class="btn btn-sm btn-icon btn-warning" data-edit="${h.id}"><i class="fas fa-pen"></i> Editar</button>
+                                            <button type="button" class="btn btn-sm btn-icon btn-danger" data-remove="${h.id}"><i class="fas fa-trash"></i> Remover</button>
+                                        </div>
                                     </div>
                                 `).join('');
+                                // Wire de remover via fetch
+                                lista.querySelectorAll('[data-remove]').forEach(btn => {
+                                    btn.addEventListener('click', () => {
+                                        if (!confirm('Remover este horário do aluno?')) return;
+                                        const horarioId = btn.getAttribute('data-remove');
+                                        fetch('php/remover_horario.php', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                            body: `aluno_id=${encodeURIComponent(aluno.id)}&horario_id=${encodeURIComponent(horarioId)}`
+                                        })
+                                        .then(r => r.json())
+                                        .then(resp => {
+                                            if (resp && resp.ok) {
+                                                const item = btn.closest('.horario-item');
+                                                if (item) item.remove();
+                                                if (!lista.querySelector('.horario-item')) {
+                                                    lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                                                }
+                                            }
+                                        })
+                                        .catch(() => {});
+                                    });
+                                });
+                                // Wire de editar: preencher formulário e alterar endpoint para editar
+                                lista.querySelectorAll('[data-edit]').forEach(btn => {
+                                    btn.addEventListener('click', () => {
+                                        const item = btn.closest('.horario-item');
+                                        const nome = item.querySelector('strong')?.textContent || '';
+                                        const texto = item.querySelector('.info span')?.textContent || '';
+                                        // texto no formato "— Segunda às 07:00:00"
+                                        const partes = texto.replace('—','').trim().split(' às ');
+                                        const dia = (partes[0] || '').trim();
+                                        const hora = (partes[1] || '').trim();
+
+                                        const form = document.getElementById('form-adicionar-horario');
+                                        if (!form) return;
+                                        form.querySelector('input[name="nome_aula"]').value = nome;
+                                        form.querySelector('select[name="dia_semana"]').value = dia;
+                                        form.querySelector('input[name="hora"]').value = hora;
+
+                                        // marcar estado de edição
+                                        form.setAttribute('data-edit-id', btn.getAttribute('data-edit'));
+                                        const submitBtn = form.querySelector('button[type="submit"]');
+                                        if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Horário';
+                                    });
+                                });
                             } else {
                                 lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
                             }
@@ -317,6 +370,103 @@ window.addEventListener('load', () => {
     document.addEventListener('click', function(e) {
         if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
             searchResults.style.display = 'none';
+        }
+    });
+
+    // Delegar envio do formulário de atualização do aluno via fetch
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form && form.id === 'form-atualiza-aluno') {
+            e.preventDefault();
+            const data = new URLSearchParams(new FormData(form));
+            fetch('php/alterar_faixa.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: data.toString()
+            })
+            .then(r => r.json())
+            .then(resp => {
+                if (resp && resp.ok) {
+                    const stats = document.querySelector('.aluno-stats');
+                    if (stats) {
+                        stats.innerHTML = `
+                            <span class="badge badge-info">${resp.faixa}</span>
+                            <span class="badge badge-warning">${resp.graus} graus</span>
+                            <span class="badge badge-danger">${document.querySelector('.aluno-stats .badge-danger')?.textContent || ''}</span>
+                        `;
+                    }
+                }
+            })
+            .catch(() => {});
+        }
+        
+        if (form && form.id === 'form-adicionar-horario') {
+            e.preventDefault();
+            const data = new URLSearchParams(new FormData(form));
+            const editId = form.getAttribute('data-edit-id');
+            const url = editId ? 'php/editar_horario.php' : 'php/atribuir_horario.php';
+            if (editId) data.append('horario_id', editId);
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: data.toString()
+            })
+            .then(r => r.json())
+            .then(resp => {
+                if (resp && resp.ok) {
+                    // limpar estado
+                    form.reset();
+                    form.removeAttribute('data-edit-id');
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Horário';
+                    // re-render lista
+                    const alunoId = data.get('aluno_id');
+                    return fetch(`php/get_aluno_horarios.php?aluno_id=${encodeURIComponent(alunoId)}`)
+                        .then(r => r.json())
+                        .then(info => {
+                            const lista = document.getElementById('aluno-horarios-lista');
+                            if (!lista) return;
+                            if (info && Array.isArray(info.horarios) && info.horarios.length) {
+                                lista.innerHTML = info.horarios.map(h => `
+                                    <div class="horario-item">
+                                        <div class="info">
+                                            <strong>${h.nome_aula}</strong>
+                                            <span>— ${h.dia_semana} às ${h.hora}</span>
+                                        </div>
+                                        <div class="horario-actions">
+                                            <button type="button" class="btn btn-sm btn-icon btn-warning" data-edit="${h.id}"><i class="fas fa-pen"></i> Editar</button>
+                                            <button type="button" class="btn btn-sm btn-icon btn-danger" data-remove="${h.id}"><i class="fas fa-trash"></i> Remover</button>
+                                        </div>
+                                    </div>
+                                `).join('');
+                                // re-wire editar e remover
+                                lista.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => b.click()));
+                                lista.querySelectorAll('[data-remove]').forEach(b => {
+                                    b.addEventListener('click', () => {
+                                        if (!confirm('Remover este horário do aluno?')) return;
+                                        const horarioId = b.getAttribute('data-remove');
+                                        fetch('php/remover_horario.php', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                            body: `aluno_id=${encodeURIComponent(alunoId)}&horario_id=${encodeURIComponent(horarioId)}`
+                                        }).then(r=>r.json()).then(resp=>{
+                                            if (resp && resp.ok) {
+                                                const item = b.closest('.horario-item');
+                                                if (item) item.remove();
+                                                if (!lista.querySelector('.horario-item')) {
+                                                    lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                                                }
+                                            }
+                                        });
+                                    });
+                                });
+                            } else {
+                                lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                            }
+                        });
+                }
+            })
+            .catch(() => {});
         }
     });
 });

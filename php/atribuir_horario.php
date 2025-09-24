@@ -3,7 +3,10 @@ session_start();
 include 'db.php';
 
 if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'professor') {
-    die('Acesso negado');
+    header('Content-Type: application/json');
+    http_response_code(403);
+    echo json_encode(['ok' => false, 'erro' => 'Acesso negado']);
+    exit;
 }
 
 // Campos do formulário
@@ -14,7 +17,8 @@ $hora      = trim($_POST['hora'] ?? '');
 $profId    = intval($_SESSION['user_id']);
 
 if ($alunoId <= 0 || $nomeAula === '' || $diaSemana === '' || $hora === '') {
-    header('Location: ../professor.html?erro=campos_invalidos');
+    header('Content-Type: application/json');
+    echo json_encode(['ok' => false, 'erro' => 'Campos inválidos']);
     exit;
 }
 
@@ -32,7 +36,8 @@ if ($resH && $resH->num_rows > 0) {
 } else {
     $sqlCriaHorario = "INSERT INTO horarios (nome_aula, dia_semana, hora, professor_id) VALUES ('$nomeAulaEsc', '$diaEsc', '$horaEsc', $profId)";
     if (!$conn->query($sqlCriaHorario)) {
-        header('Location: ../professor.html?erro=criar_horario');
+        header('Content-Type: application/json');
+        echo json_encode(['ok' => false, 'erro' => 'Erro ao criar horário']);
         exit;
     }
     $horarioId = intval($conn->insert_id);
@@ -47,7 +52,8 @@ if (!$resV || $resV->num_rows === 0) {
     $conn->query($sqlVincula);
 }
 
-header('Location: ../professor.html?ok=horario_atribuido');
+header('Content-Type: application/json');
+echo json_encode(['ok' => true, 'aluno_id' => $alunoId, 'horario_id' => $horarioId, 'nome_aula' => $nomeAula, 'dia_semana' => $diaSemana, 'hora' => $hora]);
 exit;
 ?>
 
