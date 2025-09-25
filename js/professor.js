@@ -263,27 +263,135 @@ window.addEventListener('load', () => {
                             const show = area.style.display === 'none' || area.style.display === '';
                             area.style.display = show ? 'block' : 'none';
                         }
-                        // Preencher lista de horários existentes
+                        // Preencher tabela de horários existentes
                         const lista = document.getElementById('aluno-horarios-lista');
                         if (lista) {
                             if (info && Array.isArray(info.horarios) && info.horarios.length) {
-                                lista.innerHTML = info.horarios.map(h => `
-                                    <div class="horario-item">
-                                        <div class="info">
-                                            <strong>${h.nome_aula}</strong>
-                                            <span>— ${h.dia_semana} às ${h.hora}</span>
-                                        </div>
-                                        <div class="horario-actions">
-                                            <button type="button" class="btn btn-sm btn-icon btn-warning" data-edit="${h.id}"><i class="fas fa-pen"></i> Editar</button>
-                                            <button type="button" class="btn btn-sm btn-icon btn-danger" data-remove="${h.id}"><i class="fas fa-trash"></i> Remover</button>
-                                        </div>
+                                lista.innerHTML = `
+                                    <table class="horarios-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome da Aula</th>
+                                                <th>Dia da Semana</th>
+                                                <th>Horário</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${info.horarios.map(h => `
+                                                <tr class="horario-row" data-horario-id="${h.id}" data-nome="${h.nome_aula}" data-dia="${h.dia_semana}" data-hora="${h.hora}">
+                                                    <td>${h.nome_aula}</td>
+                                                    <td>${h.dia_semana}</td>
+                                                    <td>${h.hora}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    <div class="horarios-actions">
+                                        <button type="button" class="btn btn-sm btn-warning" id="btn-editar-horario" disabled>
+                                            <i class="fas fa-pen"></i> Editar Horário Selecionado
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" id="btn-remover-horario" disabled>
+                                            <i class="fas fa-trash"></i> Remover Horário Selecionado
+                                        </button>
                                     </div>
-                                `).join('');
-                                // Wire de remover via fetch
-                                lista.querySelectorAll('[data-remove]').forEach(btn => {
-                                    btn.addEventListener('click', () => {
+                                `;
+                                
+                                // Adicionar seleção de linha
+                                lista.querySelectorAll('.horario-row').forEach(row => {
+                                    row.addEventListener('click', () => {
+                                        const isSelected = row.classList.contains('selected');
+                                        
+                                        if (isSelected) {
+                                            // Segundo clique: remover seleção
+                                            row.classList.remove('selected');
+                                            
+                                            // Desabilitar botões
+                                            const btnEditar = document.getElementById('btn-editar-horario');
+                                            const btnRemover = document.getElementById('btn-remover-horario');
+                                            if (btnEditar) btnEditar.disabled = true;
+                                            if (btnRemover) btnRemover.disabled = true;
+                                        } else {
+                                            // Primeiro clique: selecionar linha
+                                            lista.querySelectorAll('.horario-row').forEach(r => r.classList.remove('selected'));
+                                            row.classList.add('selected');
+                                            
+                                            // Habilitar botões
+                                            const btnEditar = document.getElementById('btn-editar-horario');
+                                            const btnRemover = document.getElementById('btn-remover-horario');
+                                            if (btnEditar) btnEditar.disabled = false;
+                                            if (btnRemover) btnRemover.disabled = false;
+                                        }
+                                    });
+                                });
+                                
+                                // Event listener para editar
+                                const btnEditar = document.getElementById('btn-editar-horario');
+                                if (btnEditar) {
+                                    btnEditar.addEventListener('click', () => {
+                                        const linhaSelecionada = lista.querySelector('.horario-row.selected');
+                                        if (!linhaSelecionada) return;
+                                        
+                                        const form = document.getElementById('form-novos-horarios');
+                                        if (!form) return;
+                                        
+                                        const isEditing = form.getAttribute('data-edit-id');
+                                        
+                                        if (isEditing) {
+                                            // Segundo clique: limpar formulário
+                                            form.reset();
+                                            form.removeAttribute('data-edit-id');
+                                            
+                                            const submitBtn = form.querySelector('button[type="submit"]');
+                                            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-plus"></i> Adicionar Horário para o Aluno';
+                                            
+                                            // Ocultar formulário
+                                            const areaForm = document.getElementById('aluno-novos-horarios');
+                                            if (areaForm) areaForm.style.display = 'none';
+                                            
+                                            // Alterar botão toggle
+                                            const btnToggle = document.getElementById('btn-adicionar-horarios');
+                                            if (btnToggle) {
+                                                btnToggle.innerHTML = '<i class="fas fa-plus-circle"></i> Novos Horários';
+                                            }
+                                        } else {
+                                            // Primeiro clique: preencher formulário
+                                            const nome = linhaSelecionada.getAttribute('data-nome');
+                                            const dia = linhaSelecionada.getAttribute('data-dia');
+                                            const hora = linhaSelecionada.getAttribute('data-hora');
+                                            const horarioId = linhaSelecionada.getAttribute('data-horario-id');
+
+                                            form.querySelector('input[name="nome_aula"]').value = nome;
+                                            form.querySelector('select[name="dia_semana"]').value = dia;
+                                            form.querySelector('input[name="hora"]').value = hora;
+
+                                            // marcar estado de edição
+                                            form.setAttribute('data-edit-id', horarioId);
+                                            const submitBtn = form.querySelector('button[type="submit"]');
+                                            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Horário';
+                                            
+                                            // Mostrar formulário
+                                            const areaForm = document.getElementById('aluno-novos-horarios');
+                                            if (areaForm) areaForm.style.display = 'block';
+                                            
+                                            // Alterar botão toggle
+                                            const btnToggle = document.getElementById('btn-adicionar-horarios');
+                                            if (btnToggle) {
+                                                btnToggle.innerHTML = '<i class="fas fa-minus-circle"></i> Ocultar';
+                                            }
+                                        }
+                                    });
+                                }
+                                
+                                // Event listener para remover
+                                const btnRemover = document.getElementById('btn-remover-horario');
+                                if (btnRemover) {
+                                    btnRemover.addEventListener('click', () => {
+                                        const linhaSelecionada = lista.querySelector('.horario-row.selected');
+                                        if (!linhaSelecionada) return;
+                                        
                                         if (!confirm('Remover este horário do aluno?')) return;
-                                        const horarioId = btn.getAttribute('data-remove');
+                                        
+                                        const horarioId = linhaSelecionada.getAttribute('data-horario-id');
                                         fetch('php/remover_horario.php', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -292,39 +400,22 @@ window.addEventListener('load', () => {
                                         .then(r => r.json())
                                         .then(resp => {
                                             if (resp && resp.ok) {
-                                                const item = btn.closest('.horario-item');
-                                                if (item) item.remove();
-                                                if (!lista.querySelector('.horario-item')) {
+                                                linhaSelecionada.remove();
+                                                // Desabilitar botões se não há mais linhas
+                                                if (!lista.querySelector('.horario-row')) {
                                                     lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                                                } else {
+                                                    // Desabilitar botões após remoção
+                                                    const btnEditar = document.getElementById('btn-editar-horario');
+                                                    const btnRemover = document.getElementById('btn-remover-horario');
+                                                    if (btnEditar) btnEditar.disabled = true;
+                                                    if (btnRemover) btnRemover.disabled = true;
                                                 }
                                             }
                                         })
                                         .catch(() => {});
                                     });
-                                });
-                                // Wire de editar: preencher formulário e alterar endpoint para editar
-                                lista.querySelectorAll('[data-edit]').forEach(btn => {
-                                    btn.addEventListener('click', () => {
-                                        const item = btn.closest('.horario-item');
-                                        const nome = item.querySelector('strong')?.textContent || '';
-                                        const texto = item.querySelector('.info span')?.textContent || '';
-                                        // texto no formato "— Segunda às 07:00:00"
-                                        const partes = texto.replace('—','').trim().split(' às ');
-                                        const dia = (partes[0] || '').trim();
-                                        const hora = (partes[1] || '').trim();
-
-                                        const form = document.getElementById('form-adicionar-horario');
-                                        if (!form) return;
-                                        form.querySelector('input[name="nome_aula"]').value = nome;
-                                        form.querySelector('select[name="dia_semana"]').value = dia;
-                                        form.querySelector('input[name="hora"]').value = hora;
-
-                                        // marcar estado de edição
-                                        form.setAttribute('data-edit-id', btn.getAttribute('data-edit'));
-                                        const submitBtn = form.querySelector('button[type="submit"]');
-                                        if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Horário';
-                                    });
-                                });
+                                }
                             } else {
                                 lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
                             }
@@ -365,6 +456,12 @@ window.addEventListener('load', () => {
                             if (area) {
                                 const show = area.style.display === 'none' || area.style.display === '';
                                 area.style.display = show ? 'block' : 'none';
+                                
+                                // Se não há horários, mostrar mensagem
+                                const lista = document.getElementById('aluno-horarios-lista');
+                                if (lista && !lista.innerHTML.trim()) {
+                                    lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                                }
                             }
                         });
                     }
@@ -443,7 +540,7 @@ window.addEventListener('load', () => {
                     form.removeAttribute('data-edit-id');
                     const submitBtn = form.querySelector('button[type="submit"]');
                     if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Horário';
-                    // re-render lista
+                    // re-render tabela
                     const alunoId = data.get('aluno_id');
                     return fetch(`php/get_aluno_horarios.php?aluno_id=${encodeURIComponent(alunoId)}`)
                         .then(r => r.json())
@@ -451,39 +548,150 @@ window.addEventListener('load', () => {
                             const lista = document.getElementById('aluno-horarios-lista');
                             if (!lista) return;
                             if (info && Array.isArray(info.horarios) && info.horarios.length) {
-                                lista.innerHTML = info.horarios.map(h => `
-                                    <div class="horario-item">
-                                        <div class="info">
-                                            <strong>${h.nome_aula}</strong>
-                                            <span>— ${h.dia_semana} às ${h.hora}</span>
-                                        </div>
-                                        <div class="horario-actions">
-                                            <button type="button" class="btn btn-sm btn-icon btn-warning" data-edit="${h.id}"><i class="fas fa-pen"></i> Editar</button>
-                                            <button type="button" class="btn btn-sm btn-icon btn-danger" data-remove="${h.id}"><i class="fas fa-trash"></i> Remover</button>
-                                        </div>
+                                lista.innerHTML = `
+                                    <table class="horarios-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome da Aula</th>
+                                                <th>Dia da Semana</th>
+                                                <th>Horário</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${info.horarios.map(h => `
+                                                <tr class="horario-row" data-horario-id="${h.id}" data-nome="${h.nome_aula}" data-dia="${h.dia_semana}" data-hora="${h.hora}">
+                                                    <td>${h.nome_aula}</td>
+                                                    <td>${h.dia_semana}</td>
+                                                    <td>${h.hora}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    <div class="horarios-actions">
+                                        <button type="button" class="btn btn-sm btn-warning" id="btn-editar-horario" disabled>
+                                            <i class="fas fa-pen"></i> Editar Horário Selecionado
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" id="btn-remover-horario" disabled>
+                                            <i class="fas fa-trash"></i> Remover Horário Selecionado
+                                        </button>
                                     </div>
-                                `).join('');
-                                // re-wire editar e remover
-                                lista.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => b.click()));
-                                lista.querySelectorAll('[data-remove]').forEach(b => {
-                                    b.addEventListener('click', () => {
+                                `;
+                                
+                                // Re-wire seleção de linha
+                                lista.querySelectorAll('.horario-row').forEach(row => {
+                                    row.addEventListener('click', () => {
+                                        const isSelected = row.classList.contains('selected');
+                                        
+                                        if (isSelected) {
+                                            // Segundo clique: remover seleção
+                                            row.classList.remove('selected');
+                                            
+                                            // Desabilitar botões
+                                            const btnEditar = document.getElementById('btn-editar-horario');
+                                            const btnRemover = document.getElementById('btn-remover-horario');
+                                            if (btnEditar) btnEditar.disabled = true;
+                                            if (btnRemover) btnRemover.disabled = true;
+                                        } else {
+                                            // Primeiro clique: selecionar linha
+                                            lista.querySelectorAll('.horario-row').forEach(r => r.classList.remove('selected'));
+                                            row.classList.add('selected');
+                                            
+                                            // Habilitar botões
+                                            const btnEditar = document.getElementById('btn-editar-horario');
+                                            const btnRemover = document.getElementById('btn-remover-horario');
+                                            if (btnEditar) btnEditar.disabled = false;
+                                            if (btnRemover) btnRemover.disabled = false;
+                                        }
+                                    });
+                                });
+                                
+                                // Re-wire botões
+                                const btnEditar = document.getElementById('btn-editar-horario');
+                                const btnRemover = document.getElementById('btn-remover-horario');
+                                
+                                if (btnEditar) {
+                                    btnEditar.addEventListener('click', () => {
+                                        const linhaSelecionada = lista.querySelector('.horario-row.selected');
+                                        if (!linhaSelecionada) return;
+                                        
+                                        const form = document.getElementById('form-novos-horarios');
+                                        if (!form) return;
+                                        
+                                        const isEditing = form.getAttribute('data-edit-id');
+                                        
+                                        if (isEditing) {
+                                            // Segundo clique: limpar formulário
+                                            form.reset();
+                                            form.removeAttribute('data-edit-id');
+                                            
+                                            const submitBtn = form.querySelector('button[type="submit"]');
+                                            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-plus"></i> Adicionar Horário para o Aluno';
+                                            
+                                            // Ocultar formulário
+                                            const areaForm = document.getElementById('aluno-novos-horarios');
+                                            if (areaForm) areaForm.style.display = 'none';
+                                            
+                                            // Alterar botão toggle
+                                            const btnToggle = document.getElementById('btn-adicionar-horarios');
+                                            if (btnToggle) {
+                                                btnToggle.innerHTML = '<i class="fas fa-plus-circle"></i> Novos Horários';
+                                            }
+                                        } else {
+                                            // Primeiro clique: preencher formulário
+                                            const nome = linhaSelecionada.getAttribute('data-nome');
+                                            const dia = linhaSelecionada.getAttribute('data-dia');
+                                            const hora = linhaSelecionada.getAttribute('data-hora');
+                                            const horarioId = linhaSelecionada.getAttribute('data-horario-id');
+
+                                            form.querySelector('input[name="nome_aula"]').value = nome;
+                                            form.querySelector('select[name="dia_semana"]').value = dia;
+                                            form.querySelector('input[name="hora"]').value = hora;
+
+                                            form.setAttribute('data-edit-id', horarioId);
+                                            const submitBtn = form.querySelector('button[type="submit"]');
+                                            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Horário';
+                                            
+                                            const areaForm = document.getElementById('aluno-novos-horarios');
+                                            if (areaForm) areaForm.style.display = 'block';
+                                            
+                                            const btnToggle = document.getElementById('btn-adicionar-horarios');
+                                            if (btnToggle) {
+                                                btnToggle.innerHTML = '<i class="fas fa-minus-circle"></i> Ocultar';
+                                            }
+                                        }
+                                    });
+                                }
+                                
+                                if (btnRemover) {
+                                    btnRemover.addEventListener('click', () => {
+                                        const linhaSelecionada = lista.querySelector('.horario-row.selected');
+                                        if (!linhaSelecionada) return;
+                                        
                                         if (!confirm('Remover este horário do aluno?')) return;
-                                        const horarioId = b.getAttribute('data-remove');
+                                        
+                                        const horarioId = linhaSelecionada.getAttribute('data-horario-id');
                                         fetch('php/remover_horario.php', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                                             body: `aluno_id=${encodeURIComponent(alunoId)}&horario_id=${encodeURIComponent(horarioId)}`
-                                        }).then(r=>r.json()).then(resp=>{
+                                        })
+                                        .then(r => r.json())
+                                        .then(resp => {
                                             if (resp && resp.ok) {
-                                                const item = b.closest('.horario-item');
-                                                if (item) item.remove();
-                                                if (!lista.querySelector('.horario-item')) {
+                                                linhaSelecionada.remove();
+                                                if (!lista.querySelector('.horario-row')) {
                                                     lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                                                } else {
+                                                    const btnEditar = document.getElementById('btn-editar-horario');
+                                                    const btnRemover = document.getElementById('btn-remover-horario');
+                                                    if (btnEditar) btnEditar.disabled = true;
+                                                    if (btnRemover) btnRemover.disabled = true;
                                                 }
                                             }
-                                        });
+                                        })
+                                        .catch(() => {});
                                     });
-                                });
+                                }
                             } else {
                                 lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
                             }
@@ -506,7 +714,7 @@ window.addEventListener('load', () => {
                 if (resp && resp.ok) {
                     // limpar formulário
                     form.reset();
-                    // re-render lista
+                    // re-render tabela
                     const alunoId = data.get('aluno_id');
                     return fetch(`php/get_aluno_horarios.php?aluno_id=${encodeURIComponent(alunoId)}`)
                         .then(r => r.json())
@@ -514,39 +722,150 @@ window.addEventListener('load', () => {
                             const lista = document.getElementById('aluno-horarios-lista');
                             if (!lista) return;
                             if (info && Array.isArray(info.horarios) && info.horarios.length) {
-                                lista.innerHTML = info.horarios.map(h => `
-                                    <div class="horario-item">
-                                        <div class="info">
-                                            <strong>${h.nome_aula}</strong>
-                                            <span>— ${h.dia_semana} às ${h.hora}</span>
-                                        </div>
-                                        <div class="horario-actions">
-                                            <button type="button" class="btn btn-sm btn-icon btn-warning" data-edit="${h.id}"><i class="fas fa-pen"></i> Editar</button>
-                                            <button type="button" class="btn btn-sm btn-icon btn-danger" data-remove="${h.id}"><i class="fas fa-trash"></i> Remover</button>
-                                        </div>
+                                lista.innerHTML = `
+                                    <table class="horarios-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome da Aula</th>
+                                                <th>Dia da Semana</th>
+                                                <th>Horário</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${info.horarios.map(h => `
+                                                <tr class="horario-row" data-horario-id="${h.id}" data-nome="${h.nome_aula}" data-dia="${h.dia_semana}" data-hora="${h.hora}">
+                                                    <td>${h.nome_aula}</td>
+                                                    <td>${h.dia_semana}</td>
+                                                    <td>${h.hora}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    <div class="horarios-actions">
+                                        <button type="button" class="btn btn-sm btn-warning" id="btn-editar-horario" disabled>
+                                            <i class="fas fa-pen"></i> Editar Horário Selecionado
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" id="btn-remover-horario" disabled>
+                                            <i class="fas fa-trash"></i> Remover Horário Selecionado
+                                        </button>
                                     </div>
-                                `).join('');
-                                // re-wire editar e remover
-                                lista.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => b.click()));
-                                lista.querySelectorAll('[data-remove]').forEach(b => {
-                                    b.addEventListener('click', () => {
+                                `;
+                                
+                                // Re-wire seleção de linha
+                                lista.querySelectorAll('.horario-row').forEach(row => {
+                                    row.addEventListener('click', () => {
+                                        const isSelected = row.classList.contains('selected');
+                                        
+                                        if (isSelected) {
+                                            // Segundo clique: remover seleção
+                                            row.classList.remove('selected');
+                                            
+                                            // Desabilitar botões
+                                            const btnEditar = document.getElementById('btn-editar-horario');
+                                            const btnRemover = document.getElementById('btn-remover-horario');
+                                            if (btnEditar) btnEditar.disabled = true;
+                                            if (btnRemover) btnRemover.disabled = true;
+                                        } else {
+                                            // Primeiro clique: selecionar linha
+                                            lista.querySelectorAll('.horario-row').forEach(r => r.classList.remove('selected'));
+                                            row.classList.add('selected');
+                                            
+                                            // Habilitar botões
+                                            const btnEditar = document.getElementById('btn-editar-horario');
+                                            const btnRemover = document.getElementById('btn-remover-horario');
+                                            if (btnEditar) btnEditar.disabled = false;
+                                            if (btnRemover) btnRemover.disabled = false;
+                                        }
+                                    });
+                                });
+                                
+                                // Re-wire botões
+                                const btnEditar = document.getElementById('btn-editar-horario');
+                                const btnRemover = document.getElementById('btn-remover-horario');
+                                
+                                if (btnEditar) {
+                                    btnEditar.addEventListener('click', () => {
+                                        const linhaSelecionada = lista.querySelector('.horario-row.selected');
+                                        if (!linhaSelecionada) return;
+                                        
+                                        const form = document.getElementById('form-novos-horarios');
+                                        if (!form) return;
+                                        
+                                        const isEditing = form.getAttribute('data-edit-id');
+                                        
+                                        if (isEditing) {
+                                            // Segundo clique: limpar formulário
+                                            form.reset();
+                                            form.removeAttribute('data-edit-id');
+                                            
+                                            const submitBtn = form.querySelector('button[type="submit"]');
+                                            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-plus"></i> Adicionar Horário para o Aluno';
+                                            
+                                            // Ocultar formulário
+                                            const areaForm = document.getElementById('aluno-novos-horarios');
+                                            if (areaForm) areaForm.style.display = 'none';
+                                            
+                                            // Alterar botão toggle
+                                            const btnToggle = document.getElementById('btn-adicionar-horarios');
+                                            if (btnToggle) {
+                                                btnToggle.innerHTML = '<i class="fas fa-plus-circle"></i> Novos Horários';
+                                            }
+                                        } else {
+                                            // Primeiro clique: preencher formulário
+                                            const nome = linhaSelecionada.getAttribute('data-nome');
+                                            const dia = linhaSelecionada.getAttribute('data-dia');
+                                            const hora = linhaSelecionada.getAttribute('data-hora');
+                                            const horarioId = linhaSelecionada.getAttribute('data-horario-id');
+
+                                            form.querySelector('input[name="nome_aula"]').value = nome;
+                                            form.querySelector('select[name="dia_semana"]').value = dia;
+                                            form.querySelector('input[name="hora"]').value = hora;
+
+                                            form.setAttribute('data-edit-id', horarioId);
+                                            const submitBtn = form.querySelector('button[type="submit"]');
+                                            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Horário';
+                                            
+                                            const areaForm = document.getElementById('aluno-novos-horarios');
+                                            if (areaForm) areaForm.style.display = 'block';
+                                            
+                                            const btnToggle = document.getElementById('btn-adicionar-horarios');
+                                            if (btnToggle) {
+                                                btnToggle.innerHTML = '<i class="fas fa-minus-circle"></i> Ocultar';
+                                            }
+                                        }
+                                    });
+                                }
+                                
+                                if (btnRemover) {
+                                    btnRemover.addEventListener('click', () => {
+                                        const linhaSelecionada = lista.querySelector('.horario-row.selected');
+                                        if (!linhaSelecionada) return;
+                                        
                                         if (!confirm('Remover este horário do aluno?')) return;
-                                        const horarioId = b.getAttribute('data-remove');
+                                        
+                                        const horarioId = linhaSelecionada.getAttribute('data-horario-id');
                                         fetch('php/remover_horario.php', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                                             body: `aluno_id=${encodeURIComponent(alunoId)}&horario_id=${encodeURIComponent(horarioId)}`
-                                        }).then(r=>r.json()).then(resp=>{
+                                        })
+                                        .then(r => r.json())
+                                        .then(resp => {
                                             if (resp && resp.ok) {
-                                                const item = b.closest('.horario-item');
-                                                if (item) item.remove();
-                                                if (!lista.querySelector('.horario-item')) {
+                                                linhaSelecionada.remove();
+                                                if (!lista.querySelector('.horario-row')) {
                                                     lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                                                } else {
+                                                    const btnEditar = document.getElementById('btn-editar-horario');
+                                                    const btnRemover = document.getElementById('btn-remover-horario');
+                                                    if (btnEditar) btnEditar.disabled = true;
+                                                    if (btnRemover) btnRemover.disabled = true;
                                                 }
                                             }
-                                        });
+                                        })
+                                        .catch(() => {});
                                     });
-                                });
+                                }
                             } else {
                                 lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
                             }

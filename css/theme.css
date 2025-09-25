@@ -354,7 +354,7 @@ input::placeholder {
 .card {
     background: var(--bg-card);
     border-radius: var(--border-radius);
-    padding: 1.5rem;
+    padding: 1rem;
     margin-bottom: 1rem;
     box-shadow: var(--shadow-light);
     transition: var(--transition);
@@ -384,9 +384,9 @@ input::placeholder {
 header {
     background: var(--bg-secondary);
     backdrop-filter: blur(10px);
-    padding: 1rem 2rem;
+    padding: 1rem 1rem;
     border-radius: var(--border-radius);
-    margin-bottom: 2rem;
+    margin: 0.5rem;
     box-shadow: var(--shadow-light);
     display: flex;
     justify-content: space-between;
@@ -772,7 +772,7 @@ header div {
     }
     
     .form-row {
-        grid-template-columns: 1fr;
+       
         gap: 0.75rem;
     }
     
@@ -1090,7 +1090,7 @@ header div {
     }
     
     .container-dashboard {
-        padding: 1rem;
+        padding: 0.5rem;
     }
     
     .logo {
@@ -1102,8 +1102,8 @@ header div {
     }
     
     .btn {
-        padding: 0.7rem 1.2rem;
-        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.7rem;
     }
     
     .grid-2, .grid-3 {
@@ -1259,4 +1259,77 @@ header div {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* Estilos para tabela de horários */
+.horarios-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background: var(--bg-card);
+    border-radius: var(--border-radius-small);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+}
+
+.horarios-table thead {
+    background: var(--primary-color);
+    color: white;
+}
+
+.horarios-table th,
+.horarios-table td {
+    padding: 0.4rem;
+    text-align: left;
+    font-size: 0.7rem;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.horarios-table th {
+    font-weight: 600;
+    font-size: 0.7rem;
+    /* padding: 0.4rem; */
+}
+
+.horarios-table tbody tr {
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.horarios-table tbody tr:hover {
+    background: rgba(230, 0, 0, 0.05);
+}
+
+.horarios-table tbody tr.selected {
+    background: rgba(230, 0, 0, 0.1);
+    border-left: 4px solid var(--primary-color);
+}
+
+.horarios-table tbody tr.selected td {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Botões de ação da tabela */
+.horarios-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    padding: 1rem 0;
+    border-top: 1px solid #e1e5e9;
+}
+
+.horarios-actions .btn {
+    min-width: 120px;
+}
+
+.horarios-actions .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.horarios-actions .btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
