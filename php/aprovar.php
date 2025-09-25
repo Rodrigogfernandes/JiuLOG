@@ -36,7 +36,7 @@ if ($status == 'aprovado') {
             $nova_faixa = $aluno['faixa'];
 
             // Progressão de faixas (quando atingir 4 graus, sobe faixa)
-            $ordem_faixas = ['branca', 'azul', 'roxa', 'marrom', 'preta'];
+            $ordem_faixas = ['Branca', 'Azul', 'Roxa', 'Marrom', 'Preta'];
             if ($nova_graus >= 4) {
                 $nova_graus = 0;
                 $pos = array_search($aluno['faixa'], $ordem_faixas);

@@ -19,12 +19,18 @@ $res2 = $conn->query("SELECT *
                       ORDER BY FIELD(dia_semana,'Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'), hora ASC");
 while ($row = $res2->fetch_assoc()) $horarios[] = $row;
 
-// Check-ins pendentes
+// Check-ins pendentes (incluindo check-ins livres)
 $checkins = [];
-$sql = "SELECT c.id, u.nome as aluno_nome, h.nome_aula, h.hora, h.dia_semana, c.data_checkin as data
+$sql = "SELECT c.id, 
+               u.nome as aluno_nome, 
+               COALESCE(h.nome_aula, 'Check-in Livre') as nome_aula, 
+               COALESCE(h.hora, '') as hora, 
+               COALESCE(h.dia_semana, '') as dia_semana, 
+               c.data_checkin as data,
+               c.horario_id
         FROM checkins c
         JOIN usuarios u ON c.aluno_id=u.id
-        JOIN horarios h ON c.horario_id=h.id
+        LEFT JOIN horarios h ON c.horario_id=h.id
         WHERE c.status='pendente'
         ORDER BY c.data_checkin ASC";
 $res3 = $conn->query($sql);

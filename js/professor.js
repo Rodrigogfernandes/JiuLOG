@@ -177,34 +177,44 @@ window.addEventListener('load', () => {
                 <div class="aluno-horarios" id="aluno-horarios" style="display:none;">
                     <div class="aluno-horarios-lista" id="aluno-horarios-lista"></div>
                     <div class="aluno-horarios-form" id="aluno-horarios-form">
-                        <h5 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-plus-circle"></i> Adicionar Novo Horário</h5>
-                        <form id="form-adicionar-horario" method="POST" action="php/atribuir_horario.php">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Nome da aula</label>
-                                    <input type="text" name="nome_aula" placeholder="Ex: Aula das 7:00" required>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <button type="button" class="btn btn-xs btn-secondary" id="btn-adicionar-horarios">
+                                <i class="fas fa-plus-circle"></i> Novos Horários
+                            </button>
+                        </div>
+                     
+                        <div class="aluno-novos-horarios" id="aluno-novos-horarios" style="display:none;">
+                            <h5 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-calendar-plus"></i> Adicionar Novos Horários para o Aluno</h5>
+                            <form id="form-novos-horarios" method="POST" action="php/atribuir_horario.php">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Nome da aula</label>
+                                        <input type="text" name="nome_aula" placeholder="Ex: Aula das 7:00" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Dia da semana</label>
+                                        <select name="dia_semana" required>
+                                            <option value="">Escolha o dia da semana</option>
+                                            <option value="Segunda">Segunda-feira</option>
+                                            <option value="Terça">Terça-feira</option>
+                                            <option value="Quarta">Quarta-feira</option>
+                                            <option value="Quinta">Quinta-feira</option>
+                                            <option value="Sexta">Sexta-feira</option>
+                                            <option value="Sábado">Sábado</option>
+                                            <option value="Domingo">Domingo</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Hora</label>
+                                        <input type="time" name="hora" required>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label>Dia da semana</label>
-                                    <select name="dia_semana" required>
-                                        <option value="">Escolha...</option>
-                                        <option value="Segunda">Segunda-feira</option>
-                                        <option value="Terça">Terça-feira</option>
-                                        <option value="Quarta">Quarta-feira</option>
-                                        <option value="Quinta">Quinta-feira</option>
-                                        <option value="Sexta">Sexta-feira</option>
-                                        <option value="Sábado">Sábado</option>
-                                        <option value="Domingo">Domingo</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Hora</label>
-                                    <input type="time" name="hora" required>
-                                </div>
-                            </div>
-                            <input type="hidden" name="aluno_id" value="${aluno.id}">
-                            <button type="submit" class="btn btn-sm"><i class="fas fa-save"></i> Salvar Horário</button>
-                        </form>
+                                <input type="hidden" name="aluno_id" value="${aluno.id}">
+                                <button type="submit" class="btn btn-sm">
+                                    <i class="fas fa-plus"></i> Adicionar Horário para o Aluno
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 <form class="aluno-form" id="form-atualiza-aluno">
@@ -237,28 +247,15 @@ window.addEventListener('load', () => {
             .then(r => r.json())
             .then(info => {
                 const actions = document.getElementById('aluno-actions');
-                const temHorario = (info && info.num_horarios && Number(info.num_horarios) > 0);
-                const label = temHorario ? 'Alterar Horário' : 'Adicionar Horário';
-                const icon = temHorario ? 'fa-pen-to-square' : 'fa-plus';
                 actions.innerHTML = `
                     <button type="button" class="btn btn-sm" id="btn-exibir-horarios">
                         <i class="fas fa-calendar"></i> Exibir Horários
                     </button>
-                    <button type="button" class="btn btn-sm" id="btn-horario-aluno">
-                        <i class="fas ${icon}"></i> ${label}
-                    </button>
                 `;
 
-                const btn = document.getElementById('btn-horario-aluno');
                 const btnExibir = document.getElementById('btn-exibir-horarios');
-                if (btn) {
-                    btn.addEventListener('click', () => {
-                        const area = document.getElementById('aluno-horarios');
-                        if (area) {
-                            area.style.display = 'block';
-                        }
-                    });
-                }
+                const btnAdicionarHorarios = document.getElementById('btn-adicionar-horarios');
+                
                 if (btnExibir) {
                     btnExibir.addEventListener('click', () => {
                         const area = document.getElementById('aluno-horarios');
@@ -334,31 +331,57 @@ window.addEventListener('load', () => {
                         }
                     });
                 }
+                if (btnAdicionarHorarios) {
+                    btnAdicionarHorarios.addEventListener('click', () => {
+                        const area = document.getElementById('aluno-novos-horarios');
+                        if (area) {
+                            const isVisible = area.style.display !== 'none';
+                            area.style.display = isVisible ? 'none' : 'block';
+                            
+                            // Alterar texto do botão
+                            const icon = isVisible ? 'fa-plus-circle' : 'fa-minus-circle';
+                            const text = isVisible ? 'Novos Horários' : 'Ocultar';
+                            
+                            btnAdicionarHorarios.innerHTML = `
+                                <i class="fas ${icon}"></i> ${text}
+                            `;
+                        }
+                    });
+                }
             })
             .catch(() => {
-                // Se falhar, ainda mostra opção de adicionar horário
+                // Se falhar, ainda mostra opção de exibir horários
                 const actions = document.getElementById('aluno-actions');
                 if (actions) {
                     actions.innerHTML = `
                         <button type="button" class="btn btn-sm" id="btn-exibir-horarios"><i class="fas fa-calendar"></i> Exibir Horários</button>
-                        <button type="button" class="btn btn-sm" id="btn-horario-aluno"><i class="fas fa-plus"></i> Adicionar Horário</button>
                     `;
-                    const btn = document.getElementById('btn-horario-aluno');
                     const btnExibir = document.getElementById('btn-exibir-horarios');
-                    if (btn) {
-                        btn.addEventListener('click', () => {
-                            const area = document.getElementById('aluno-horarios');
-                            if (area) {
-                                area.style.display = 'block';
-                            }
-                        });
-                    }
+                    const btnAdicionarHorarios = document.getElementById('btn-adicionar-horarios');
+                    
                     if (btnExibir) {
                         btnExibir.addEventListener('click', () => {
                             const area = document.getElementById('aluno-horarios');
                             if (area) {
                                 const show = area.style.display === 'none' || area.style.display === '';
                                 area.style.display = show ? 'block' : 'none';
+                            }
+                        });
+                    }
+                    if (btnAdicionarHorarios) {
+                        btnAdicionarHorarios.addEventListener('click', () => {
+                            const area = document.getElementById('aluno-novos-horarios');
+                            if (area) {
+                                const isVisible = area.style.display !== 'none';
+                                area.style.display = isVisible ? 'none' : 'block';
+                                
+                                // Alterar texto do botão
+                                const icon = isVisible ? 'fa-plus-circle' : 'fa-minus-circle';
+                                const text = isVisible ? 'Novos Horários' : 'Ocultar';
+                                
+                                btnAdicionarHorarios.innerHTML = `
+                                    <i class="fas ${icon}"></i> ${text}
+                                `;
                             }
                         });
                     }
@@ -372,6 +395,7 @@ window.addEventListener('load', () => {
             searchResults.style.display = 'none';
         }
     });
+
 
     // Delegar envio do formulário de atualização do aluno via fetch
     document.addEventListener('submit', function(e) {
@@ -419,6 +443,69 @@ window.addEventListener('load', () => {
                     form.removeAttribute('data-edit-id');
                     const submitBtn = form.querySelector('button[type="submit"]');
                     if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Horário';
+                    // re-render lista
+                    const alunoId = data.get('aluno_id');
+                    return fetch(`php/get_aluno_horarios.php?aluno_id=${encodeURIComponent(alunoId)}`)
+                        .then(r => r.json())
+                        .then(info => {
+                            const lista = document.getElementById('aluno-horarios-lista');
+                            if (!lista) return;
+                            if (info && Array.isArray(info.horarios) && info.horarios.length) {
+                                lista.innerHTML = info.horarios.map(h => `
+                                    <div class="horario-item">
+                                        <div class="info">
+                                            <strong>${h.nome_aula}</strong>
+                                            <span>— ${h.dia_semana} às ${h.hora}</span>
+                                        </div>
+                                        <div class="horario-actions">
+                                            <button type="button" class="btn btn-sm btn-icon btn-warning" data-edit="${h.id}"><i class="fas fa-pen"></i> Editar</button>
+                                            <button type="button" class="btn btn-sm btn-icon btn-danger" data-remove="${h.id}"><i class="fas fa-trash"></i> Remover</button>
+                                        </div>
+                                    </div>
+                                `).join('');
+                                // re-wire editar e remover
+                                lista.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => b.click()));
+                                lista.querySelectorAll('[data-remove]').forEach(b => {
+                                    b.addEventListener('click', () => {
+                                        if (!confirm('Remover este horário do aluno?')) return;
+                                        const horarioId = b.getAttribute('data-remove');
+                                        fetch('php/remover_horario.php', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                            body: `aluno_id=${encodeURIComponent(alunoId)}&horario_id=${encodeURIComponent(horarioId)}`
+                                        }).then(r=>r.json()).then(resp=>{
+                                            if (resp && resp.ok) {
+                                                const item = b.closest('.horario-item');
+                                                if (item) item.remove();
+                                                if (!lista.querySelector('.horario-item')) {
+                                                    lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                                                }
+                                            }
+                                        });
+                                    });
+                                });
+                            } else {
+                                lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
+                            }
+                        });
+                }
+            })
+            .catch(() => {});
+        }
+        
+        if (form && form.id === 'form-novos-horarios') {
+            e.preventDefault();
+            const data = new URLSearchParams(new FormData(form));
+            fetch('php/atribuir_horario.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: data.toString()
+            })
+            .then(r => r.json())
+            .then(resp => {
+                if (resp && resp.ok) {
+                    // limpar formulário
+                    form.reset();
                     // re-render lista
                     const alunoId = data.get('aluno_id');
                     return fetch(`php/get_aluno_horarios.php?aluno_id=${encodeURIComponent(alunoId)}`)

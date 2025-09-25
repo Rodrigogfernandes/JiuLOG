@@ -295,6 +295,13 @@ input::placeholder {
     border-radius: var(--border-radius-small);
 }
 
+/* Botão extra pequeno */
+.btn-xs {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    border-radius: var(--border-radius-small);
+}
+
 /* Botão grande */
 .btn-lg {
     padding: 1.2rem 2.5rem;
@@ -724,12 +731,215 @@ header div {
 
 /* Responsividade para aluno selecionado */
 @media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
+    .aluno-selecionado {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+    
+    .aluno-info h4 {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+    
+    .aluno-info p {
+        text-align: center;
+        font-size: 0.9rem;
     }
     
     .aluno-stats {
         justify-content: center;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .aluno-stats .badge {
+        width: fit-content;
+        min-width: 120px;
+        text-align: center;
+    }
+    
+    .aluno-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .aluno-actions .btn {
+        width: 100%;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .aluno-form {
+        padding: 0.75rem;
+    }
+    
+    .aluno-horarios {
+        padding: 0.75rem;
+        margin-top: 1rem;
+    }
+    
+    .horario-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+    
+    .horario-item .info {
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: center;
+    }
+    
+    .horario-item .info strong {
+        font-size: 1rem;
+    }
+    
+    .horario-item .info span {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    .horario-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .horario-actions .btn {
+        flex: 1;
+        min-width: 100px;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .aluno-horarios-form {
+        margin-top: 1rem;
+    }
+    
+    .aluno-horarios-form h5 {
+        font-size: 1rem;
+        text-align: center;
+        margin-bottom: 0.75rem;
+    }
+    
+    .aluno-horarios-form .form-row {
+        gap: 0.5rem;
+    }
+    
+    .aluno-horarios-form .form-group label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .aluno-horarios-form input,
+    .aluno-horarios-form select {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+    
+    .aluno-horarios-form button {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Responsividade para smartphones pequenos */
+@media (max-width: 480px) {
+    .aluno-selecionado {
+        padding: 0.75rem;
+        margin: 0.25rem;
+        border-radius: var(--border-radius-small);
+    }
+    
+    .aluno-info h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .aluno-info p {
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .aluno-stats {
+        gap: 0.4rem;
+    }
+    
+    .aluno-stats .badge {
+        min-width: 100px;
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
+    .aluno-actions {
+        gap: 0.4rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .aluno-actions .btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+        margin: 0.2rem
+    }
+    
+    .aluno-form {
+        padding: 0.5rem;
+    }
+    
+    .aluno-horarios {
+        padding: 0.5rem;
+        margin-top: 0.75rem;
+    }
+    
+    .horario-item {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .horario-item .info strong {
+        font-size: 0.9rem;
+    }
+    
+    .horario-item .info span {
+        font-size: 0.8rem;
+    }
+    
+    .horario-actions {
+        gap: 0.4rem;
+    }
+    
+    .horario-actions .btn {
+        min-width: 80px;
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem;
+    }
+    
+    .aluno-horarios-form h5 {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .aluno-horarios-form .form-group label {
+        font-size: 0.8rem;
+    }
+    
+    .aluno-horarios-form input,
+    .aluno-horarios-form select {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .aluno-horarios-form button {
+        font-size: 0.85rem;
+        padding: 0.6rem;
     }
 }
 
@@ -939,3 +1149,114 @@ header div {
 
 .w-100 { width: 100%; }
 .h-100 { height: 100%; }
+
+/* ===== ESTILOS PARA CHECK-INS ===== */
+
+/* Status de check-in */
+.checkin-aprovado {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border-color: #28a745;
+    color: #155724;
+}
+
+.checkin-pendente {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.checkin-reprovado {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.checkin-livre {
+    background: linear-gradient(135deg, #e2e3e5, #d6d8db);
+    border: 2px dashed var(--primary-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.btn-checkin-livre {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-checkin-livre:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para horários */
+.horario {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    transition: var(--transition);
+}
+
+.horario:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-light);
+}
+
+/* Estilos para check-ins */
+.checkin {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Estilos para dias da semana */
+.dia-semana {
+    margin: 1.5rem 0 0.5rem 0;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.dia-semana h4 {
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dia-semana:first-child {
+    margin-top: 0;
+}
+
+/* Estilos para novos horários globais */
+.aluno-novos-horarios {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 1rem;
+    border-radius: var(--border-radius-small);
+    margin-top: 1rem;
+    border: 2px solid var(--secondary-color);
+}
+
+.aluno-novos-horarios h5 {
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
