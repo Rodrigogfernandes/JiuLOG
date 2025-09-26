@@ -31,6 +31,11 @@
             <div class="form-group">
                 <input type="password" name="senha" placeholder="Crie uma senha" required>
             </div>
+            <div class="form-group">
+                <select name="academia_id" id="academia_select" required>
+                    <option value="">Selecione uma academia...</option>
+                </select>
+            </div>
             <button type="submit" class="btn w-100">
                 <i class="fas fa-user-plus"></i>
                 Cadastrar
@@ -67,7 +72,24 @@
         }
         
         // Inicializar partículas
-        document.addEventListener('DOMContentLoaded', createParticles);
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            // Carregar academias
+            fetch('php/get_academias.php')
+              .then(r => r.json())
+              .then(d => {
+                const sel = document.getElementById('academia_select');
+                if (d.academias) {
+                    d.academias.forEach(a => {
+                        const opt = document.createElement('option');
+                        opt.value = a.id;
+                        opt.textContent = a.nome;
+                        sel.appendChild(opt);
+                    });
+                }
+              })
+              .catch(() => {});
+        });
     </script>
 </body>
 </html>

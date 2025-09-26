@@ -18,10 +18,16 @@
     <div class="particles" id="particles"></div>
 
     <header>
-        <h2>
-            <i class="fas fa-chalkboard-teacher"></i>
-            Bem-vindo, Mestre <span id="professor_nome"></span>
-        </h2>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <h2 style="margin:0">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Bem-vindo, Mestre <span id="professor_nome"></span>
+            </h2>
+            <div id="academia_info" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);padding:8px 12px;border-radius:6px">
+                <div id="academia_logo"></div>
+                <span id="academia_nome"></span>
+            </div>
+        </div>
         <div>
             <a href="php/novo_aluno.php" class="novo-aluno-btn">
                 <i class="fas fa-user-plus"></i>
@@ -35,31 +41,111 @@
     </header>
 
     <div class="container-dashboard">
+        <!-- Navegação por abas -->
+        <div class="tabs-navigation">
+            <button class="tab-btn active" data-tab="checkins">
+                <i class="fas fa-clock"></i> Check-ins
+            </button>
+            <button class="tab-btn" data-tab="alunos">
+                <i class="fas fa-users"></i> Alunos
+            </button>
+            <button class="tab-btn" data-tab="solicitacoes">
+                <i class="fas fa-handshake"></i> Solicitações
+            </button>
+            <button class="tab-btn" data-tab="conta">
+                <i class="fas fa-user-cog"></i> Minha Conta
+            </button>
+        </div>
 
-        <!-- Check-ins pendentes -->
-        <div class="card">
-            <h3><i class="fas fa-clock"></i> Check-ins Pendentes</h3>
-            <div id="checkins_container" class="grid grid-2">
-                <!-- JS irá preencher os check-ins aqui -->
+        <!-- Aba: Check-ins pendentes -->
+        <div id="tab-checkins" class="tab-content active">
+            <div class="card">
+                <h3><i class="fas fa-clock"></i> Check-ins Pendentes</h3>
+                <div id="checkins_container" class="grid grid-2">
+                    <!-- JS irá preencher os check-ins aqui -->
+                </div>
             </div>
         </div>
 
-        <!-- Encontrar Aluno -->
-        <div class="card">
-            <h3><i class="fas fa-search"></i> Encontrar Aluno</h3>
-            <div class="search-box">
-                <input type="text" id="search" placeholder="Digite o nome ou email do aluno..." autocomplete="off" spellcheck="false">
+        <!-- Aba: Gerenciar Alunos -->
+        <div id="tab-alunos" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-search"></i> Encontrar Aluno</h3>
+                <div class="search-box">
+                    <input type="text" id="search" placeholder="Digite o nome ou email do aluno..." autocomplete="off" spellcheck="false">
+                </div>
+                <div id="search-results" class="search-results" style="display: none;">
+                    <!-- Resultados da busca aparecerão aqui -->
+                </div>
             </div>
-            <div id="search-results" class="search-results" style="display: none;">
-                <!-- Resultados da busca aparecerão aqui -->
+            
+            <div class="card">
+                <h3><i class="fas fa-users"></i> Gerenciar Aluno Selecionado</h3>
+                <div id="alunos_container" class="grid grid-3">
+                    <!-- JS irá preencher os alunos aqui -->
+                </div>
             </div>
         </div>
 
-        <!-- Gerenciar aluno -->
-        <div class="card">
-            <h3><i class="fas fa-users"></i> Gerenciar Aluno Selecionado</h3>
-            <div id="alunos_container" class="grid grid-3">
-                <!-- JS irá preencher os alunos aqui -->
+        <!-- Aba: Solicitações de Academia -->
+        <div id="tab-solicitacoes" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-handshake"></i> Solicitações de Academia</h3>
+                <div id="solicitacoes_container">
+                    <div class="table-loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba: Gerenciar Conta -->
+        <div id="tab-conta" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-user-cog"></i> Minha Conta</h3>
+                <div id="conta_container">
+                    <form id="form-editar-conta" class="conta-form" enctype="multipart/form-data">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome:</label>
+                                <input type="text" name="nome" id="conta-nome" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email:</label>
+                                <input type="email" name="email" id="conta-email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nova Senha (deixe em branco para manter):</label>
+                                <input type="password" name="nova_senha" id="conta-senha" placeholder="Digite nova senha">
+                            </div>
+                            <div class="form-group">
+                                <label>Confirmar Nova Senha:</label>
+                                <input type="password" name="confirmar_senha" id="conta-confirmar-senha" placeholder="Confirme a nova senha">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Academia:</label>
+                                <input type="text" name="academia_nome" id="conta-academia" placeholder="Nome da academia">
+                            </div>
+                            <div class="form-group">
+                                <label>Logo da Academia:</label>
+                                <input type="file" name="academia_logo" id="conta-logo" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                            <button type="button" class="btn btn-danger" id="btn-excluir-conta">
+                                <i class="fas fa-trash"></i> Excluir Conta
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 

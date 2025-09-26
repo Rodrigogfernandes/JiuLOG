@@ -2,13 +2,49 @@ window.addEventListener('load', () => {
     fetch('php/get_professor.php')
         .then(res => res.json())
         .then(data => {
+            console.log('Dados recebidos:', data); // Debug
+            
             const professorNome = document.getElementById('professor_nome');
+            const academiaLogo = document.getElementById('academia_logo');
+            const academiaNome = document.getElementById('academia_nome');
             const horariosContainer = document.getElementById('horarios_container');
             const checkinsContainer = document.getElementById('checkins_container');
             const alunosContainer = document.getElementById('alunos_container');
+            const solicitacoesContainer = document.getElementById('solicitacoes_container');
 
-            if (professorNome && data.user.nome) {
-                professorNome.textContent = data.user.nome;
+            // Ajuste conforme get_professor.php
+            const prof = (data && (data.professor || data.user)) || {};
+            const academias = (data && data.academias) || [];
+
+            console.log('Professor:', prof); // Debug
+            console.log('Academias:', academias); // Debug
+
+            // Nome do professor
+            if (professorNome) {
+                professorNome.textContent = prof.nome || 'Professor';
+                console.log('Nome do professor definido:', professorNome.textContent); // Debug
+            }
+
+            // Logo e nome da academia
+            const acad = academias && academias.length ? academias[0] : null;
+            console.log('Academia selecionada:', acad); // Debug
+            
+            if (academiaLogo && academiaNome) {
+                if (acad && acad.logo_path) {
+                    academiaLogo.innerHTML = `<img src="${acad.logo_path}" alt="Logo da academia" style="height:32px;border-radius:4px">`;
+                    console.log('Logo da academia carregada:', acad.logo_path); // Debug
+                } else {
+                    academiaLogo.innerHTML = `<i class="fas fa-building" style="font-size:24px;opacity:0.7"></i>`;
+                    console.log('Ícone padrão da academia exibido'); // Debug
+                }
+                
+                if (acad && acad.nome) {
+                    academiaNome.textContent = acad.nome;
+                    console.log('Nome da academia definido:', academiaNome.textContent); // Debug
+                } else {
+                    academiaNome.textContent = 'Nenhuma academia';
+                    console.log('Nenhuma academia encontrada'); // Debug
+                }
             }
 
             // -----------------------------
@@ -50,6 +86,61 @@ window.addEventListener('load', () => {
                     `;
                     checkinsContainer.appendChild(div);
                 });
+            }
+
+            // -----------------------------
+            // SOLICITAÇÕES DE ACADEMIA
+            // -----------------------------
+            if (solicitacoesContainer) {
+                const solicitacoes = Array.isArray(data.solicitacoes) ? data.solicitacoes : [];
+                if (!solicitacoes.length) {
+                    solicitacoesContainer.innerHTML = '<div class="search-no-results">Nenhuma solicitação pendente</div>';
+                } else {
+                    solicitacoesContainer.innerHTML = `
+                        <table class="aluno-table">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Academia</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${solicitacoes.map(s => `
+                                    <tr>
+                                        <td>${s.aluno_nome}</td>
+                                        <td>${s.academia_nome}</td>
+                                        <td>
+                                            <button class="btn btn-sm" data-approve="${s.membership_id}"><i class="fas fa-check"></i> Aprovar</button>
+                                            <button class="btn btn-sm btn-outline" data-reject="${s.membership_id}"><i class="fas fa-times"></i> Rejeitar</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+
+                    solicitacoesContainer.querySelectorAll('[data-approve]').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const id = btn.getAttribute('data-approve');
+                            fetch('php/confirmar_vinculo.php', {
+                                method: 'POST',
+                                headers: {'Content-Type':'application/x-www-form-urlencoded'},
+                                body: 'acao=' + encodeURIComponent('prof_aceitar') + '&membership_id=' + encodeURIComponent(id)
+                            }).then(r=>r.json()).then(()=>location.reload());
+                        });
+                    });
+                    solicitacoesContainer.querySelectorAll('[data-reject]').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const id = btn.getAttribute('data-reject');
+                            fetch('php/confirmar_vinculo.php', {
+                                method: 'POST',
+                                headers: {'Content-Type':'application/x-www-form-urlencoded'},
+                                body: 'acao=' + encodeURIComponent('prof_rejeitar') + '&membership_id=' + encodeURIComponent(id)
+                            }).then(r=>r.json()).then(()=>location.reload());
+                        });
+                    });
+                }
             }
 
             // -----------------------------
@@ -1350,4 +1441,117 @@ window.addEventListener('load', () => {
             .catch(() => {});
         }
     });
+
+    // Tab switching
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('tab-btn')) {
+            console.log('Tab clicked:', e.target.getAttribute('data-tab'));
+            const tabName = e.target.getAttribute('data-tab');
+            
+            // Remove active from all tabs and content
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active to clicked tab and corresponding content
+            e.target.classList.add('active');
+            const targetContent = document.getElementById('tab-' + tabName);
+            if (targetContent) {
+                targetContent.classList.add('active');
+                console.log('Tab activated:', tabName);
+            } else {
+                console.error('Tab content not found:', 'tab-' + tabName);
+            }
+        }
+    });
+
+    // Account management
+    const formConta = document.getElementById('form-editar-conta');
+    const btnExcluirConta = document.getElementById('btn-excluir-conta');
+
+    console.log('Form elements found:', {formConta: !!formConta, btnExcluirConta: !!btnExcluirConta});
+
+    if (formConta) {
+        // Load current account data
+        fetch('php/get_professor.php')
+            .then(res => res.json())
+            .then(data => {
+                const prof = data.professor || data.user || {};
+                const academias = data.academias || [];
+                const acad = academias[0];
+
+                document.getElementById('conta-nome').value = prof.nome || '';
+                document.getElementById('conta-email').value = prof.email || '';
+                if (acad) {
+                    document.getElementById('conta-academia').value = acad.nome || '';
+                }
+            });
+
+        // Handle form submission
+        formConta.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(formConta);
+            const novaSenha = formData.get('nova_senha');
+            const confirmarSenha = formData.get('confirmar_senha');
+            
+            if (novaSenha && novaSenha !== confirmarSenha) {
+                alert('As senhas não coincidem!');
+                return;
+            }
+            
+            if (!novaSenha) {
+                formData.delete('nova_senha');
+                formData.delete('confirmar_senha');
+            }
+
+            fetch('php/editar_professor.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) {
+                    alert('Conta atualizada com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + (data.message || 'Erro desconhecido'));
+                }
+            })
+            .catch(err => {
+                console.error('Erro:', err);
+                alert('Erro ao atualizar conta');
+            });
+        });
+    }
+
+    if (btnExcluirConta) {
+        btnExcluirConta.addEventListener('click', function() {
+            if (!confirm('ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja excluir sua conta?\n\nIsso removerá:\n- Sua conta de professor\n- Todas as academias associadas\n- Todos os dados relacionados')) {
+                return;
+            }
+            
+            if (!confirm('ÚLTIMA CONFIRMAÇÃO: Excluir conta permanentemente?')) {
+                return;
+            }
+            
+            fetch('php/excluir_professor.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'confirmar=1'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) {
+                    alert('Conta excluída. Redirecionando...');
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Erro: ' + (data.message || 'Erro desconhecido'));
+                }
+            })
+            .catch(err => {
+                console.error('Erro:', err);
+                alert('Erro ao excluir conta');
+            });
+        });
+    }
 });

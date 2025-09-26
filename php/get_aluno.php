@@ -48,9 +48,22 @@ while ($row = $checkins_res->fetch_assoc()) {
 }
 
 // Retornar JSON
+// Membership atual (se existir)
+$membership = null;
+$mres = $conn->query("SELECT m.id as membership_id, m.status, m.academia_id, a.nome as academia_nome, a.logo_path
+                      FROM academia_memberships m
+                      JOIN academias a ON a.id=m.academia_id
+                      WHERE m.aluno_id=$aluno_id
+                      ORDER BY m.atualizada_em DESC, m.criada_em DESC
+                      LIMIT 1");
+if ($mres && $mres->num_rows > 0) {
+    $membership = $mres->fetch_assoc();
+}
+
 echo json_encode([
     'aluno' => $aluno,
     'horarios' => $horarios,
-    'checkins' => $checkins
+    'checkins' => $checkins,
+    'membership' => $membership
 ]);
 ?>

@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `senha` VARCHAR(255) NOT NULL,
   `tipo` ENUM('aluno','professor') NOT NULL DEFAULT 'aluno',
   `faixa` VARCHAR(50) DEFAULT NULL,
+  `graus` TINYINT UNSIGNED DEFAULT 0,
+  `aulas_faltando` INT DEFAULT 55,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_unq` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -29,18 +31,42 @@ CREATE TABLE IF NOT EXISTS `horarios` (
 -- checkins realizados pelos alunos
 CREATE TABLE IF NOT EXISTS `checkins` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `usuario_id` INT UNSIGNED NOT NULL,
+  `aluno_id` INT UNSIGNED NOT NULL,
   `horario_id` INT UNSIGNED DEFAULT NULL,
-  `data` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `data_checkin` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` ENUM('pendente','aprovado','reprovado') NOT NULL DEFAULT 'pendente',
   `comentario` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- academias (criada por professor)
+CREATE TABLE IF NOT EXISTS `academias` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(150) NOT NULL,
+  `logo_path` VARCHAR(255) DEFAULT NULL,
+  `professor_id` INT UNSIGNED NOT NULL,
+  `criada_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `professor_id_idx` (`professor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- associação aluno x academia com confirmação mútua
+CREATE TABLE IF NOT EXISTS `academia_memberships` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `aluno_id` INT UNSIGNED NOT NULL,
+  `academia_id` INT UNSIGNED NOT NULL,
+  `status` ENUM('pending_professor','pending_aluno','approved','rejected','cancelled') NOT NULL DEFAULT 'pending_professor',
+  `criada_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizada_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_active_membership` (`aluno_id`,`academia_id`),
+  KEY `academia_id_idx` (`academia_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Inserir alguns usuários de exemplo (senha em texto simples para teste: 'senha')
-INSERT INTO `usuarios` (`nome`,`email`,`senha`,`tipo`,`faixa`) VALUES
-('Aluno Exemplo','aluno@local.test','senha','aluno','Branca'),
-('Professor Exemplo','professor@local.test','senha','professor',NULL)
+INSERT INTO `usuarios` (`nome`,`email`,`senha`,`tipo`,`faixa`,`graus`,`aulas_faltando`) VALUES
+('Aluno Exemplo','aluno@local.test','senha','aluno','Branca',0,55),
+('Professor Exemplo','professor@local.test','senha','professor',NULL,0,55)
 ON DUPLICATE KEY UPDATE nome=VALUES(nome);
 
 -- Inserir alguns horários de exemplo

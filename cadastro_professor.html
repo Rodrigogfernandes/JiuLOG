@@ -21,7 +21,7 @@
         </div>
         <h2><i class="fas fa-chalkboard-teacher"></i> Cadastro de Professor</h2>
         
-        <form method="POST" action="php/cadastro_professor.php">
+        <form method="POST" action="php/cadastro_professor.php" enctype="multipart/form-data">
             <div class="form-group">
                 <input type="text" name="nome" placeholder="Digite seu nome completo" required>
             </div>
@@ -30,6 +30,13 @@
             </div>
             <div class="form-group">
                 <input type="password" name="senha" placeholder="Crie uma senha" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="academia_nome" placeholder="Nome da academia" required>
+            </div>
+            <div class="form-group">
+                <label style="display:block;margin-bottom:6px;opacity:.85"><i class="fas fa-image"></i> Logomarca da academia</label>
+                <input type="file" name="academia_logo" accept="image/*">
             </div>
             <button type="submit" class="btn w-100">
                 <i class="fas fa-user-plus"></i>

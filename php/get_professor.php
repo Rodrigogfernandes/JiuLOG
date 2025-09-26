@@ -6,11 +6,15 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] != 'professor') {
     die(json_encode(['erro' => 'Acesso negado']));
 }
 
-$user_id = $_SESSION['user_id'];
+$professor_id = $_SESSION['user_id'];
 
 // Dados do professor
-$res = $conn->query("SELECT nome FROM usuarios WHERE id=$user_id");
-$user = $res->fetch_assoc();
+$prof = $conn->query("SELECT id,nome,email FROM usuarios WHERE id=$professor_id")->fetch_assoc();
+
+// Academias do professor
+$academias = [];
+$res = $conn->query("SELECT id,nome,logo_path FROM academias WHERE professor_id=$professor_id ORDER BY criada_em DESC");
+while ($row = $res->fetch_assoc()) { $academias[] = $row; }
 
 // Horários ativos
 $horarios = [];
@@ -44,11 +48,31 @@ $res4 = $conn->query("SELECT id, nome, faixa, graus
                       ORDER BY nome ASC");
 while ($row = $res4->fetch_assoc()) $alunos[] = $row;
 
+// Solicitações de vínculo pendentes para o professor
+$solicitacoes = [];
+$q = "SELECT m.id AS membership_id,
+             m.aluno_id,
+             u.nome AS aluno_nome,
+             m.academia_id,
+             a.nome AS academia_nome,
+             m.status,
+             m.criada_em
+      FROM academia_memberships m
+      JOIN academias a ON a.id = m.academia_id
+      JOIN usuarios u ON u.id = m.aluno_id
+      WHERE a.professor_id = $professor_id AND m.status = 'pending_professor'
+      ORDER BY m.criada_em ASC";
+$rsol = $conn->query($q);
+while ($row = $rsol->fetch_assoc()) $solicitacoes[] = $row;
+
 // Retorno JSON
 echo json_encode([
-    'user' => $user,
+    'professor' => $prof,
+    'academias' => $academias,
+    'user' => $prof, // compatibilidade
     'horarios' => $horarios,
     'checkins' => $checkins,
-    'alunos' => $alunos
+    'alunos' => $alunos,
+    'solicitacoes' => $solicitacoes
 ]);
 ?>

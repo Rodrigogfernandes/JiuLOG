@@ -4,7 +4,7 @@ REM Ajuste XAMPP_PATH se necessário
 
 set XAMPP_PATH=C:\xampp
 set MYSQL_CMD="%XAMPP_PATH%\mysql\bin\mysql.exe"
-set SQL_FILE=%~dp0JiuLOG\php\schema.sql
+set SQL_FILE=%~dp0php\schema.sql
 
 if not exist %MYSQL_CMD% (
   echo mysql.exe not found em %MYSQL_CMD%
