@@ -219,15 +219,15 @@ window.addEventListener('load', () => {
                         </tbody>
                     </table>
                     <div class="historico-actions">
-                        <button type="button" class="btn btn-sm btn-danger" id="btn-excluir-aluno">
-                            <i class="fas fa-trash"></i> Excluir Aluno
+                        <button type="button" class="btn btn-sm btn-danger" id="btn-remover-vinculo" ${aluno && aluno.membership_id ? '' : 'disabled'}>
+                            <i class="fas fa-trash"></i> Remover vínculo
                         </button>
                     </div>
                 ` : `
                     <div class="search-no-results">Nenhum histórico de presença encontrado</div>
                     <div class="historico-actions">
-                        <button type="button" class="btn btn-sm btn-danger" id="btn-excluir-aluno">
-                            <i class="fas fa-trash"></i> Excluir Aluno
+                        <button type="button" class="btn btn-sm btn-danger" id="btn-remover-vinculo" ${aluno && aluno.membership_id ? '' : 'disabled'}>
+                            <i class="fas fa-trash"></i> Remover vínculo
                         </button>
                     </div>
                 `;
@@ -241,49 +241,60 @@ window.addEventListener('load', () => {
                 const container = document.getElementById('historico-container');
                 if (!container) return;
 
-                // Configurar botão de excluir aluno (se houver)
-                const btnExcluir = container.querySelector('#btn-excluir-aluno');
-                if (btnExcluir && aluno) {
-                    btnExcluir.addEventListener('click', () => {
-                        if (!confirm(`Tem certeza que deseja excluir o aluno "${aluno.nome}"?\n\nEsta ação não pode ser desfeita e removerá:\n- Todos os horários do aluno\n- Todo o histórico de presença\n- Todos os check-ins`)) return;
-                        if (!confirm('ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nConfirma a exclusão do aluno?')) return;
+                // Configurar botão de remover vínculo (se houver membership)
+                const btnRemover = container.querySelector('#btn-remover-vinculo');
+                if (btnRemover && aluno) {
+                    btnRemover.addEventListener('click', () => {
+                        const membershipId = aluno.membership_id || null;
+                        if (!membershipId) {
+                            alert('ID do vínculo não disponível para este aluno.');
+                            return;
+                        }
 
-                        const originalText = btnExcluir.innerHTML;
-                        btnExcluir.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
-                        btnExcluir.disabled = true;
+                        if (!confirm('Remover vínculo deste aluno com a academia?')) return;
 
-                        fetch('php/excluir_aluno.php', {
+                        const originalText = btnRemover.innerHTML;
+                        btnRemover.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removendo...';
+                        btnRemover.disabled = true;
+
+                        fetch('php/confirmar_vinculo.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: `aluno_id=${encodeURIComponent(aluno.id)}`
+                            body: 'acao=' + encodeURIComponent('prof_rejeitar') + '&membership_id=' + encodeURIComponent(membershipId)
                         })
                         .then(r => r.json())
                         .then(resp => {
                             if (resp && resp.ok) {
-                                const alunosContainer = document.getElementById('alunos_container');
-                                if (alunosContainer) {
-                                    alunosContainer.innerHTML = `
-                                        <div class="search-no-results">
-                                            <i class="fas fa-check-circle" style="color: #28a745; font-size: 2rem; margin-bottom: 1rem;"></i>
-                                            <h4>Aluno excluído com sucesso!</h4>
-                                            <p>O aluno "${escapeHtml(aluno.nome)}" foi removido do sistema.</p>
-                                            <button type="button" class="btn btn-sm" onclick="location.reload()">
-                                                <i class="fas fa-refresh"></i> Atualizar Página
-                                            </button>
-                                        </div>
-                                    `;
+                                // Fechar card de aluno selecionado
+                                const btnFecharCard = document.getElementById('btn-fechar-card');
+                                if (btnFecharCard) {
+                                    btnFecharCard.click();
+                                } else {
+                                    const alunosContainer = document.getElementById('alunos_container');
+                                    if (alunosContainer) {
+                                        alunosContainer.innerHTML = `
+                                            <div class="no-aluno-selected">
+                                                <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                                                <h3>Selecione um aluno</h3>
+                                                <p>Use a barra de pesquisa acima para encontrar e selecionar um aluno.</p>
+                                            </div>
+                                        `;
+                                    }
                                 }
+
+                                // Recarregar lista de alunos
+                                try { loadAlunosAcademia(true); } catch (e) { console.warn('Não foi possível recarregar a lista de alunos:', e); }
                             } else {
-                                alert('Erro ao excluir aluno: ' + (resp.message || 'Erro desconhecido'));
-                                btnExcluir.innerHTML = originalText;
-                                btnExcluir.disabled = false;
+                                alert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                                btnRemover.disabled = false;
+                                btnRemover.innerHTML = originalText;
                             }
                         })
                         .catch(err => {
-                            console.error('Erro:', err);
-                            alert('Erro ao excluir aluno. Tente novamente.');
-                            btnExcluir.innerHTML = originalText;
-                            btnExcluir.disabled = false;
+                            console.error('Erro ao remover vínculo:', err);
+                            alert('Erro ao remover vínculo. Veja o console para mais detalhes.');
+                            btnRemover.disabled = false;
+                            btnRemover.innerHTML = originalText;
                         });
                     });
                 }
@@ -506,10 +517,7 @@ window.addEventListener('load', () => {
                 actions.innerHTML = `
                     <button type="button" class="btn btn-sm" id="btn-exibir-horarios">
                         <i class="fas fa-calendar"></i> Exibir Horários
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger" id="btn-remover-vinculo" ${aluno.membership_id ? '' : 'disabled'} style="margin-left:0.5rem;">
-                        <i class="fas fa-trash"></i> Remover vínculo
-                    </button>
+                    </button>                   
                 `;
 
                 const btnExibir = document.getElementById('btn-exibir-horarios');
