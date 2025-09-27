@@ -1,4 +1,6 @@
+// Alert/Confirm centralizados via js/custom-alert.js (carregado nas páginas)
 window.addEventListener('load', () => {
+
     // Buscar dados iniciais do professor (nome, academias, solicitações)
     fetch('php/get_professor.php')
         .then(r => r.json())
@@ -20,9 +22,10 @@ window.addEventListener('load', () => {
             if (academiaNomeEl && academias.length) {
                 academiaNomeEl.textContent = academias[0].nome || '';
             }
-            if (academiaLogoEl && academias.length && academias[0].logo) {
-                // Inserir img se existir caminho
-                academiaLogoEl.innerHTML = `<img src="${academias[0].logo}" alt="Logo" style="height:36px;">`;
+            if (academiaLogoEl && academias.length && (academias[0].logo_path || academias[0].logo)) {
+                // Inserir img se existir caminho (compatibilidade com backend que usa logo_path)
+                const logoSrc = academias[0].logo_path || academias[0].logo;
+                academiaLogoEl.innerHTML = `<img src="${logoSrc}" alt="Logo" style="height:36px;">`;
             }
 
             // Renderizar solicitações (se houver)
@@ -255,14 +258,16 @@ window.addEventListener('load', () => {
                 // Configurar botão de remover vínculo (se houver membership)
                 const btnRemover = container.querySelector('#btn-remover-vinculo');
                 if (btnRemover && aluno) {
-                    btnRemover.addEventListener('click', () => {
+                    btnRemover.addEventListener('click', async () => {
                         const membershipId = aluno.membership_id || null;
                         if (!membershipId) {
-                            alert('ID do vínculo não disponível para este aluno.');
+                            window.showAlert('ID do vínculo não disponível para este aluno.');
                             return;
                         }
 
-                        if (!confirm('Remover vínculo deste aluno com a academia?')) return;
+                        // confirmar via modal não-bloqueante
+                        const ok = await window.confirmModal('Remover vínculo deste aluno com a academia?');
+                        if (!ok) return;
 
                         const originalText = btnRemover.innerHTML;
                         btnRemover.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removendo...';
@@ -296,14 +301,14 @@ window.addEventListener('load', () => {
                                 // Recarregar lista de alunos
                                 try { loadAlunosAcademia(true); } catch (e) { console.warn('Não foi possível recarregar a lista de alunos:', e); }
                             } else {
-                                alert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                                window.showAlert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
                                 btnRemover.disabled = false;
                                 btnRemover.innerHTML = originalText;
                             }
                         })
                         .catch(err => {
                             console.error('Erro ao remover vínculo:', err);
-                            alert('Erro ao remover vínculo. Veja o console para mais detalhes.');
+                            window.showAlert('Erro ao remover vínculo. Veja o console para mais detalhes.');
                             btnRemover.disabled = false;
                             btnRemover.innerHTML = originalText;
                         });
@@ -664,11 +669,12 @@ window.addEventListener('load', () => {
                                 // Event listener para remover
                                 const btnRemover = document.getElementById('btn-remover-horario');
                                 if (btnRemover) {
-                                    btnRemover.addEventListener('click', () => {
+                                    btnRemover.addEventListener('click', async () => {
                                         const linhaSelecionada = lista.querySelector('.horario-row.selected');
                                         if (!linhaSelecionada) return;
                                         
-                                        if (!confirm('Remover este horário do aluno?')) return;
+                                        const ok = await window.confirmModal('Remover este horário do aluno?');
+                                        if (!ok) return;
                                         
                                         const horarioId = linhaSelecionada.getAttribute('data-horario-id');
                                         fetch('php/remover_horario.php', {
@@ -704,14 +710,15 @@ window.addEventListener('load', () => {
 
                 // Handler para remover vínculo (apenas se existir membership_id)
                 if (btnRemoverVinculo) {
-                    btnRemoverVinculo.addEventListener('click', () => {
+                    btnRemoverVinculo.addEventListener('click', async () => {
                         const membershipId = aluno.membership_id || null;
                         if (!membershipId) {
-                            alert('ID do vínculo não disponível para este aluno.');
+                            window.showAlert('ID do vínculo não disponível para este aluno.');
                             return;
                         }
 
-                        if (!confirm('Remover vínculo deste aluno com a academia?')) return;
+                        const ok = await window.confirmModal('Remover vínculo deste aluno com a academia?');
+                        if (!ok) return;
 
                         const originalHtml = btnRemoverVinculo.innerHTML;
                         btnRemoverVinculo.disabled = true;
@@ -745,14 +752,14 @@ window.addEventListener('load', () => {
                                 // Recarregar lista de alunos
                                 try { loadAlunosAcademia(true); } catch (e) { console.warn('Não foi possível recarregar a lista de alunos:', e); }
                             } else {
-                                alert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                                window.showAlert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
                                 btnRemoverVinculo.disabled = false;
                                 btnRemoverVinculo.innerHTML = originalHtml;
                             }
                         })
                         .catch(err => {
                             console.error('Erro ao remover vínculo:', err);
-                            alert('Erro ao remover vínculo. Veja o console para mais detalhes.');
+                            window.showAlert('Erro ao remover vínculo. Veja o console para mais detalhes.');
                             btnRemoverVinculo.disabled = false;
                             btnRemoverVinculo.innerHTML = originalHtml;
                         });
@@ -929,14 +936,14 @@ window.addEventListener('load', () => {
                         // Mostrar mensagem de sucesso
                         // alert('Aluno atualizado com sucesso!');
                     } else {
-                        alert('Erro ao atualizar aluno: ' + (resp.message || 'Erro desconhecido'));
+                        window.showAlert('Erro ao atualizar aluno: ' + (resp.message || 'Erro desconhecido'));
                         btnSalvar.innerHTML = originalText;
                         btnSalvar.disabled = false;
                     }
                 })
                 .catch(err => {
                     console.error('Erro:', err);
-                    alert('Erro ao atualizar aluno. Tente novamente.');
+                    window.showAlert('Erro ao atualizar aluno. Tente novamente.');
                     btnSalvar.innerHTML = originalText;
                     btnSalvar.disabled = false;
                 });
@@ -1086,12 +1093,10 @@ window.addEventListener('load', () => {
 
         // Excluir check-in
         if (btnExcluir) {
-            btnExcluir.addEventListener('click', function() {
+            btnExcluir.addEventListener('click', async function() {
                 const checkinId = modal.dataset.checkinId;
-                
-                if (!confirm('Tem certeza que deseja excluir este check-in?\n\nEsta ação não pode ser desfeita.')) {
-                    return;
-                }
+                const ok = await window.confirmModal('Tem certeza que deseja excluir este check-in?\n\nEsta ação não pode ser desfeita.');
+                if (!ok) return;
                 
                 // Mostrar loading no botão
                 const originalText = btnExcluir.innerHTML;
@@ -1116,15 +1121,15 @@ window.addEventListener('load', () => {
                         }
                         
                         // alert('Check-in excluído com sucesso!');
-                    } else {
-                        alert('Erro ao excluir check-in: ' + (resp.message || 'Erro desconhecido'));
+                        } else {
+                        window.showAlert('Erro ao excluir check-in: ' + (resp.message || 'Erro desconhecido'));
                         btnExcluir.innerHTML = originalText;
                         btnExcluir.disabled = false;
                     }
                 })
                 .catch(err => {
                     console.error('Erro:', err);
-                    alert('Erro ao excluir check-in. Tente novamente.');
+                    window.showAlert('Erro ao excluir check-in. Tente novamente.');
                     btnExcluir.innerHTML = originalText;
                     btnExcluir.disabled = false;
                 });
@@ -1161,14 +1166,14 @@ window.addEventListener('load', () => {
                         
                         // alert('Status atualizado com sucesso!');
                     } else {
-                        alert('Erro ao atualizar status: ' + (resp.message || 'Erro desconhecido'));
+                        window.showAlert('Erro ao atualizar status: ' + (resp.message || 'Erro desconhecido'));
                         btnSalvar.innerHTML = originalText;
                         btnSalvar.disabled = false;
                     }
                 })
                 .catch(err => {
                     console.error('Erro:', err);
-                    alert('Erro ao atualizar status. Tente novamente.');
+                    window.showAlert('Erro ao atualizar status. Tente novamente.');
                     btnSalvar.innerHTML = originalText;
                     btnSalvar.disabled = false;
                 });
@@ -1324,11 +1329,12 @@ window.addEventListener('load', () => {
                                 }
                                 
                                 if (btnRemover) {
-                                    btnRemover.addEventListener('click', () => {
+                                    btnRemover.addEventListener('click', async () => {
                                         const linhaSelecionada = lista.querySelector('.horario-row.selected');
                                         if (!linhaSelecionada) return;
                                         
-                                        if (!confirm('Remover este horário do aluno?')) return;
+                                        const ok = await window.confirmModal('Remover este horário do aluno?');
+                                        if (!ok) return;
                                         
                                         const horarioId = linhaSelecionada.getAttribute('data-horario-id');
                                         fetch('php/remover_horario.php', {
@@ -1498,11 +1504,12 @@ window.addEventListener('load', () => {
                                 }
                                 
                                 if (btnRemover) {
-                                    btnRemover.addEventListener('click', () => {
+                                    btnRemover.addEventListener('click', async () => {
                                         const linhaSelecionada = lista.querySelector('.horario-row.selected');
                                         if (!linhaSelecionada) return;
                                         
-                                        if (!confirm('Remover este horário do aluno?')) return;
+                                        const ok = await window.confirmModal('Remover este horário do aluno?');
+                                        if (!ok) return;
                                         
                                         const horarioId = linhaSelecionada.getAttribute('data-horario-id');
                                         fetch('php/remover_horario.php', {
@@ -1687,15 +1694,16 @@ window.addEventListener('load', () => {
             // Remover vínculo
             const btnRemove = row.querySelector('.btn-remove-membership');
             if (btnRemove) {
-                btnRemove.addEventListener('click', (e) => {
+                btnRemove.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     const membershipId = row.getAttribute('data-membership');
                     if (!membershipId) {
-                        alert('Membership ID não disponível para este registro');
+                        window.showAlert('Membership ID não disponível para este registro');
                         return;
                     }
 
-                    if (!confirm('Remover vínculo deste aluno com a academia?')) return;
+                    const ok = await window.confirmModal('Remover vínculo deste aluno com a academia?');
+                    if (!ok) return;
 
                     btnRemove.disabled = true;
                     btnRemove.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removendo...';
@@ -1711,14 +1719,14 @@ window.addEventListener('load', () => {
                             // remover a linha da tabela
                             row.remove();
                         } else {
-                            alert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                            window.showAlert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
                             btnRemove.disabled = false;
                             btnRemove.innerHTML = 'Remover vínculo';
                         }
                     })
                     .catch(err => {
                         console.error('Erro ao remover vínculo:', err);
-                        alert('Erro ao remover vínculo. Veja console.');
+                        window.showAlert('Erro ao remover vínculo. Veja console.');
                         btnRemove.disabled = false;
                         btnRemove.innerHTML = 'Remover vínculo';
                     });
@@ -1804,11 +1812,13 @@ window.addEventListener('load', () => {
         });
 
         // Função auxiliar para enviar alteração de status e atualizar UI
-        function handleCheckinAction(button, novoStatus, sourceArray) {
+        async function handleCheckinAction(button, novoStatus, sourceArray) {
             const id = button.getAttribute(novoStatus === 'aprovado' ? 'data-checkin-accept' : 'data-checkin-reject');
             if (!id) return;
 
-            if (!confirm(`Confirma ${novoStatus === 'aprovado' ? 'aceitar' : 'reprovar'} este check-in?`)) return;
+            // usar o modal customizado de confirmação
+            const ok = await window.confirmModal(`Confirma ${novoStatus === 'aprovado' ? 'aceitar' : 'reprovar'} este check-in?`);
+            if (!ok) return;
 
             const originalText = button.innerHTML;
             button.disabled = true;
@@ -1840,7 +1850,7 @@ window.addEventListener('load', () => {
                     } catch(e) { /* ignore */ }
 
                 } else {
-                    alert('Erro: ' + (resp && resp.message ? resp.message : 'Erro ao atualizar status'));
+                    window.showAlert('Erro: ' + (resp && resp.message ? resp.message : 'Erro ao atualizar status'));
                     button.disabled = false;
                     button.innerHTML = originalText;
                     if (card) {
@@ -1851,7 +1861,7 @@ window.addEventListener('load', () => {
             })
             .catch(err => {
                 console.error('Erro ao alterar status do checkin:', err);
-                alert('Erro ao processar a solicitação. Veja o console.');
+                window.showAlert('Erro ao processar a solicitação. Veja o console.');
                 button.disabled = false;
                 button.innerHTML = originalText;
                 if (card) {
@@ -1908,7 +1918,7 @@ window.addEventListener('load', () => {
             const confirmarSenha = formData.get('confirmar_senha');
             
             if (novaSenha && novaSenha !== confirmarSenha) {
-                alert('As senhas não coincidem!');
+                window.showAlert('As senhas não coincidem!');
                 return;
             }
             
@@ -1924,28 +1934,26 @@ window.addEventListener('load', () => {
             .then(res => res.json())
             .then(data => {
                 if (data.ok) {
-                    alert('Conta atualizada com sucesso!');
+                    window.showAlert('Conta atualizada com sucesso!');
                     location.reload();
                 } else {
-                    alert('Erro: ' + (data.message || 'Erro desconhecido'));
+                    window.showAlert('Erro: ' + (data.message || 'Erro desconhecido'));
                 }
             })
             .catch(err => {
                 console.error('Erro:', err);
-                alert('Erro ao atualizar conta');
+                window.showAlert('Erro ao atualizar conta');
             });
         });
     }
 
     if (btnExcluirConta) {
-        btnExcluirConta.addEventListener('click', function() {
-            if (!confirm('ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja excluir sua conta?\n\nIsso removerá:\n- Sua conta de professor\n- Todas as academias associadas\n- Todos os dados relacionados')) {
-                return;
-            }
+        btnExcluirConta.addEventListener('click', async function() {
+            const ok1 = await window.confirmModal('ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja excluir sua conta?\n\nIsso removerá:\n- Sua conta de professor\n- Todas as academias associadas\n- Todos os dados relacionados');
+            if (!ok1) return;
 
-            if (!confirm('ÚLTIMA CONFIRMAÇÃO: Excluir conta permanentemente?')) {
-                return;
-            }
+            const ok2 = await window.confirmModal('ÚLTIMA CONFIRMAÇÃO: Excluir conta permanentemente?');
+            if (!ok2) return;
 
             fetch('php/excluir_professor.php', {
                 method: 'POST',
@@ -1955,15 +1963,15 @@ window.addEventListener('load', () => {
             .then(res => res.json())
             .then(data => {
                 if (data.ok) {
-                    alert('Conta excluída. Redirecionando...');
+                    window.showAlert('Conta excluída. Redirecionando...');
                     window.location.href = 'index.html';
                 } else {
-                    alert('Erro: ' + (data.message || 'Erro desconhecido'));
+                    window.showAlert('Erro: ' + (data.message || 'Erro desconhecido'));
                 }
             })
             .catch(err => {
                 console.error('Erro:', err);
-                alert('Erro ao excluir conta');
+                window.showAlert('Erro ao excluir conta');
             });
         });
     }

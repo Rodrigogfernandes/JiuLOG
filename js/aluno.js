@@ -1,4 +1,11 @@
 window.addEventListener('load', () => {
+    // Garantir que `alert()` dentro deste escopo use o modal customizado quando disponível
+    try {
+        const _alert = (window.showAlert || window.alert).bind(window);
+        // eslint-disable-next-line no-shadow
+        const alert = _alert;
+    } catch (e) {}
+
     // Abas na página do aluno: comportamento simples
     document.addEventListener('click', function(e) {
         const btn = e.target.closest && e.target.closest('.tab-btn');
@@ -14,9 +21,9 @@ window.addEventListener('load', () => {
     // Handler para checkin livre (data atual)
     const btnCheckinLivre = document.getElementById('btn-checkin-livre');
     if (btnCheckinLivre) {
-        btnCheckinLivre.addEventListener('click', () => {
+        btnCheckinLivre.addEventListener('click', async () => {
             const data = new Date().toISOString().slice(0,10); // YYYY-MM-DD
-            if (!confirm('Marcar presença livre para hoje (' + data + ')?')) return;
+            if (!await window.confirmModal('Marcar presença livre para hoje (' + data + ')?')) return;
             btnCheckinLivre.disabled = true;
             btnCheckinLivre.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
             fetch('php/checkin_livre.php', {
@@ -28,7 +35,7 @@ window.addEventListener('load', () => {
                 location.reload();
             }).catch(err => {
                 console.error('Erro ao enviar checkin livre:', err);
-                alert('Erro ao marcar presença. Veja console.');
+                window.showAlert('Erro ao marcar presença. Veja console.');
                 btnCheckinLivre.disabled = false;
                 btnCheckinLivre.innerHTML = '<i class="fas fa-check"></i> Marcar presença (Livre)';
             });
@@ -161,11 +168,11 @@ function criarTabelaHorariosTreino(horarios, container) {
 
     // Adicionar listeners para botões de marcar presença por horário
     container.querySelectorAll('.btn-marcar-presenca').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             e.preventDefault();
             const horarioId = btn.getAttribute('data-horario-id');
             const data = new Date().toISOString().slice(0,10);
-            if (!confirm('Marcar presença para o horário selecionado em ' + data + '?')) return;
+            if (!await window.confirmModal('Marcar presença para o horário selecionado em ' + data + '?')) return;
             btn.disabled = true;
             const original = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
@@ -179,7 +186,7 @@ function criarTabelaHorariosTreino(horarios, container) {
                 location.reload();
             }).catch(err => {
                 console.error('Erro ao marcar presença:', err);
-                alert('Erro ao marcar presença. Veja console.');
+                window.showAlert('Erro ao marcar presença. Veja console.');
                 btn.disabled = false;
                 btn.innerHTML = original;
             });

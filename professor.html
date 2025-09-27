@@ -5,12 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Mestre - JiuLOG</title>
-    <link rel="stylesheet" href="css/theme.css">
+    <script>
+        // Injetar CSS com cache-buster para evitar cache do navegador durante desenvolvimento
+        (function(){
+            try {
+                var l = document.createElement('link');
+                l.rel = 'stylesheet';
+                l.href = 'css/theme.css?v=' + Date.now();
+                document.head.appendChild(l);
+            } catch (e) { console.error('Erro ao injetar CSS com cache-buster', e); }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // Stub temporário para capturar chamadas a alert() antes do carregamento do custom-alert.js
+        (function () {
+            if (window.__pendingAlerts) return;
+            window.__pendingAlerts = [];
+            try {
+                window.alert = function (msg) {
+                    try { window.__pendingAlerts.push(msg); } catch (e) { }
+                };
+            } catch (e) { }
+        })();
+    </script>
+    <script src="js/custom-alert.js" defer></script>
     <script src="js/professor.js" defer></script>
+    <script>
+        // Script temporário de debug: adiciona uma classe ao header para confirmar aplicação do CSS
+        document.addEventListener('DOMContentLoaded', function(){
+            try { document.querySelector('header')?.classList.add('header-debug-highlight'); } catch(e){}
+        });
+    </script>
 </head>
 
 <body>
@@ -18,21 +47,18 @@
     <div class="particles" id="particles"></div>
 
     <header>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-            <h2 style="margin:0">
-                <i class="fas fa-chalkboard-teacher"></i>
-                Bem-vindo, Mestre <span id="professor_nome"></span>
-            </h2>
-            <div id="academia_info" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);padding:8px 12px;border-radius:6px">
+        <div class="header-left">
+            <div id="academia_info">
                 <div id="academia_logo"></div>
-                <span id="academia_nome"></span>
+            </div>
+            <div class="header-title">
+            <span id="academia_nome"></span>
+            <h2>Mestre <span id="professor_nome"></span></h2>
             </div>
         </div>
-        <div>
-            <a href="php/novo_aluno.php" class="novo-aluno-btn">
-                <i class="fas fa-user-plus"></i>
-                Novo Aluno
-            </a>
+        
+        
+        <div class="header-actions">
             <a href="php/logout.php" class="btn logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
                 Deslogar
@@ -72,7 +98,8 @@
             <div class="card">
                 <h3><i class="fas fa-search"></i> Encontrar Aluno</h3>
                 <div class="search-box">
-                    <input type="text" id="search" placeholder="Digite o nome ou email do aluno..." autocomplete="off" spellcheck="false">
+                    <input type="text" id="search" placeholder="Digite o nome ou email do aluno..." autocomplete="off"
+                        spellcheck="false">
                 </div>
                 <div id="search-results" class="search-results" style="display: none;">
                     <!-- Resultados da busca aparecerão aqui -->
@@ -81,18 +108,22 @@
                 <div id="alunos_table_container" style="margin-top:1rem; display:none;">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
                         <h4 style="margin:0"><i class="fas fa-users"></i> Alunos da Academia</h4>
-                        <div>
+                        <!-- <div>
                             <button type="button" id="btn-recarregar-alunos" class="btn btn-sm">
                                 <i class="fas fa-sync"></i> Recarregar
                             </button>
-                        </div>
+                        </div> -->
+                        <a href="php/novo_aluno.php" class="novo-aluno-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Novo Aluno
+                        </a>
                     </div>
                     <div id="alunos_table_area" style="margin-top:0.75rem;">
                         <!-- JS preencherá a tabela aqui -->
                     </div>
                 </div>
             </div>
-            
+
             <div class="card">
                 <h3><i class="fas fa-users"></i> Gerenciar Aluno Selecionado</h3>
                 <div id="alunos_container" class="grid grid-3">
@@ -131,22 +162,25 @@
                                 <input type="email" name="email" id="conta-email" required>
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Nova Senha (deixe em branco para manter):</label>
-                                <input type="password" name="nova_senha" id="conta-senha" placeholder="Digite nova senha">
+                                <input type="password" name="nova_senha" id="conta-senha"
+                                    placeholder="Digite nova senha">
                             </div>
                             <div class="form-group">
                                 <label>Confirmar Nova Senha:</label>
-                                <input type="password" name="confirmar_senha" id="conta-confirmar-senha" placeholder="Confirme a nova senha">
+                                <input type="password" name="confirmar_senha" id="conta-confirmar-senha"
+                                    placeholder="Confirme a nova senha">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Academia:</label>
-                                <input type="text" name="academia_nome" id="conta-academia" placeholder="Nome da academia">
+                                <input type="text" name="academia_nome" id="conta-academia"
+                                    placeholder="Nome da academia">
                             </div>
                             <div class="form-group">
                                 <label>Logo da Academia:</label>
@@ -181,7 +215,7 @@
             <div class="modal-body">
                 <form id="form-editar-aluno" class="aluno-form">
                     <input type="hidden" name="aluno_id" id="modal-aluno-id">
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label>Nome:</label>
@@ -192,7 +226,7 @@
                             <input type="email" name="email" id="modal-aluno-email" required>
                         </div>
                     </div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label>Faixa:</label>
@@ -209,7 +243,7 @@
                             <input type="number" name="graus" id="modal-aluno-graus" min="0" max="4">
                         </div>
                     </div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label>Aulas para subir de nível:</label>
