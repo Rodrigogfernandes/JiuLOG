@@ -1,100 +1,36 @@
 window.addEventListener('load', () => {
+    // Buscar dados iniciais do professor (nome, academias, solicitações)
     fetch('php/get_professor.php')
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
-            console.log('Dados recebidos:', data); // Debug
-            
-            const professorNome = document.getElementById('professor_nome');
-            const academiaLogo = document.getElementById('academia_logo');
-            const academiaNome = document.getElementById('academia_nome');
-            const horariosContainer = document.getElementById('horarios_container');
-            const checkinsContainer = document.getElementById('checkins_container');
-            const alunosContainer = document.getElementById('alunos_container');
+            // Guardar para uso posterior
+            window._professorData = data || {};
+
+            // Nome do professor (apelido se disponível)
+            const profNomeEl = document.getElementById('professor_nome');
+            if (profNomeEl) {
+                const prof = data.professor || data.user || {};
+                profNomeEl.textContent = prof.apelido || prof.nome || '';
+            }
+
+            // Informações da academia
+            const academiaNomeEl = document.getElementById('academia_nome');
+            const academiaLogoEl = document.getElementById('academia_logo');
+            const academias = data.academias || [];
+            if (academiaNomeEl && academias.length) {
+                academiaNomeEl.textContent = academias[0].nome || '';
+            }
+            if (academiaLogoEl && academias.length && academias[0].logo) {
+                // Inserir img se existir caminho
+                academiaLogoEl.innerHTML = `<img src="${academias[0].logo}" alt="Logo" style="height:36px;">`;
+            }
+
+            // Renderizar solicitações (se houver)
             const solicitacoesContainer = document.getElementById('solicitacoes_container');
-
-            // Ajuste conforme get_professor.php
-            const prof = (data && (data.professor || data.user)) || {};
-            const academias = (data && data.academias) || [];
-
-            console.log('Professor:', prof); // Debug
-            console.log('Academias:', academias); // Debug
-
-            // Nome do professor
-            if (professorNome) {
-                professorNome.textContent = prof.nome || 'Professor';
-                console.log('Nome do professor definido:', professorNome.textContent); // Debug
-            }
-
-            // Logo e nome da academia
-            const acad = academias && academias.length ? academias[0] : null;
-            console.log('Academia selecionada:', acad); // Debug
-            
-            if (academiaLogo && academiaNome) {
-                if (acad && acad.logo_path) {
-                    academiaLogo.innerHTML = `<img src="${acad.logo_path}" alt="Logo da academia" style="height:32px;border-radius:4px">`;
-                    console.log('Logo da academia carregada:', acad.logo_path); // Debug
-                } else {
-                    academiaLogo.innerHTML = `<i class="fas fa-building" style="font-size:24px;opacity:0.7"></i>`;
-                    console.log('Ícone padrão da academia exibido'); // Debug
-                }
-                
-                if (acad && acad.nome) {
-                    academiaNome.textContent = acad.nome;
-                    console.log('Nome da academia definido:', academiaNome.textContent); // Debug
-                } else {
-                    academiaNome.textContent = 'Nenhuma academia';
-                    console.log('Nenhuma academia encontrada'); // Debug
-                }
-            }
-
-            // -----------------------------
-            // HORÁRIOS EXISTENTES (render global opcional)
-            // -----------------------------
-            if (horariosContainer && Array.isArray(data.horarios)) {
-                horariosContainer.innerHTML = "";
-                data.horarios.forEach(h => {
-                    const div = document.createElement('div');
-                    div.classList.add('horario');
-                    div.innerHTML = `
-                        <strong>${h.nome_aula}</strong><br>
-                        Dia: ${h.dia_semana} | Horário: ${h.hora}
-                        <form method="POST" action="php/aula.php" style="display:inline;">
-                            <input type="hidden" name="horario_id" value="${h.id}">
-                            <button type="submit" name="remove_aula">Remover</button>
-                        </form>
-                    `;
-                    horariosContainer.appendChild(div);
-                });
-            }
-
-            // -----------------------------
-            // CHECK-INS PENDENTES
-            // -----------------------------
-            if (checkinsContainer && Array.isArray(data.checkins)) {
-                checkinsContainer.innerHTML = "";
-                data.checkins.forEach(c => {
-                    const div = document.createElement('div');
-                    div.classList.add('checkin');
-                    div.innerHTML = `
-                        <strong>${c.aluno_nome}</strong> → ${c.nome_aula} <br>
-                        Data: ${c.data} | Hora: ${c.hora}
-                        <form method=\"POST\" action=\"php/aprovar.php\" style=\"display:inline;\">\n\
-                            <input type=\"hidden\" name=\"checkin_id\" value=\"${c.id}\">\n\
-                            <button name=\"acao\" value=\"aprovar\" class=\"btn btn-checkin btn-aprovar\"><i class=\"fas fa-check\"></i> Aprovar</button>\n\
-                            <button name=\"acao\" value=\"reprovar\" class=\"btn btn-checkin btn-reprovar\"><i class=\"fas fa-times\"></i> Reprovar</button>\n\
-                        </form>
-                    `;
-                    checkinsContainer.appendChild(div);
-                });
-            }
-
-            // -----------------------------
-            // SOLICITAÇÕES DE ACADEMIA
-            // -----------------------------
             if (solicitacoesContainer) {
-                const solicitacoes = Array.isArray(data.solicitacoes) ? data.solicitacoes : [];
+                const solicitacoes = data.solicitacoes || [];
                 if (!solicitacoes.length) {
-                    solicitacoesContainer.innerHTML = '<div class="search-no-results">Nenhuma solicitação pendente</div>';
+                    solicitacoesContainer.innerHTML = '<div class="search-no-results">Nenhuma solicitação no momento</div>';
                 } else {
                     solicitacoesContainer.innerHTML = `
                         <table class="aluno-table">
@@ -108,8 +44,8 @@ window.addEventListener('load', () => {
                             <tbody>
                                 ${solicitacoes.map(s => `
                                     <tr>
-                                        <td>${s.aluno_nome}</td>
-                                        <td>${s.academia_nome}</td>
+                                        <td>${escapeHtml(s.aluno_nome)}</td>
+                                        <td>${escapeHtml(s.academia_nome)}</td>
                                         <td>
                                             <button class="btn btn-sm" data-approve="${s.membership_id}"><i class="fas fa-check"></i> Aprovar</button>
                                             <button class="btn btn-sm btn-outline" data-reject="${s.membership_id}"><i class="fas fa-times"></i> Rejeitar</button>
@@ -142,18 +78,6 @@ window.addEventListener('load', () => {
                     });
                 }
             }
-
-            // -----------------------------
-            // CARD DE GERENCIAR ALUNO SELECIONADO
-            // -----------------------------
-            // Inicialmente vazio - só mostra aluno quando selecionado na busca
-            alunosContainer.innerHTML = `
-                <div class="no-aluno-selected">
-                    <i class="fas fa-search"></i>
-                    <h4>Nenhum aluno selecionado</h4>
-                    <p>Use a barra de pesquisa acima para encontrar e selecionar um aluno</p>
-                </div>
-            `;
         })
         .catch(err => {
             console.error("Erro ao carregar dados do professor:", err);
@@ -233,7 +157,8 @@ window.addEventListener('load', () => {
     }
 
     // Função para selecionar aluno
-    window.selecionarAluno = function(id, nome, email, faixa, graus, aulas_faltando) {
+    // membershipId é opcional e representa o id do vínculo (membership) com a academia
+    window.selecionarAluno = function(id, nome, email, faixa, graus, aulas_faltando, membershipId) {
         // Fechar resultados da busca
         searchResults.style.display = 'none';
         searchInput.value = nome; // Mostrar nome selecionado na busca
@@ -245,64 +170,215 @@ window.addEventListener('load', () => {
             email: email,
             faixa: faixa,
             graus: graus,
-            aulas_faltando: aulas_faltando
+            aulas_faltando: aulas_faltando,
+            membership_id: membershipId || null
         });
     };
 
-    // Função para carregar histórico de presença
+    // Função para carregar histórico de presença (reimplementada)
     function carregarHistoricoPresenca(alunoId, aluno = null) {
-        fetch(`php/get_historico_presenca.php?aluno_id=${encodeURIComponent(alunoId)}`)
+        const url = `php/get_historico_presenca.php?aluno_id=${encodeURIComponent(alunoId)}`;
+        fetch(url)
             .then(r => r.json())
             .then(data => {
+                const originalContainer = document.getElementById('historico-container');
+                if (!originalContainer) return;
+
+                const checkins = (data && Array.isArray(data.checkins)) ? data.checkins : [];
+
+                // Construir HTML do histórico
+                let rowsHtml = '';
+                if (checkins.length) {
+                    rowsHtml = checkins.map(c => `
+                        <tr class="historico-row" data-checkin-id="${escapeHtml(c.id)}" data-checkin-data="${escapeHtml(c.data)}" data-checkin-aula="${escapeHtml(c.nome_aula)}" data-checkin-hora="${escapeHtml(c.hora)}" data-checkin-status="${escapeHtml(c.status)}">
+                            <td>${escapeHtml(c.data)}</td>
+                            <td>${escapeHtml(c.nome_aula)}</td>
+                            <td>${escapeHtml(c.hora)}</td>
+                            <td>
+                                <span class="status-badge status-${escapeHtml(c.status)}">
+                                    <i class="fas ${c.status === 'aprovado' ? 'fa-check-circle' : c.status === 'reprovado' ? 'fa-times-circle' : 'fa-clock'}"></i>
+                                    ${escapeHtml(c.status)}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                const html = checkins.length ? `
+                    <table class="historico-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo do Treino</th>
+                                <th>Horário</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                    <div class="historico-actions">
+                        <button type="button" class="btn btn-sm btn-danger" id="btn-excluir-aluno">
+                            <i class="fas fa-trash"></i> Excluir Aluno
+                        </button>
+                    </div>
+                ` : `
+                    <div class="search-no-results">Nenhum histórico de presença encontrado</div>
+                    <div class="historico-actions">
+                        <button type="button" class="btn btn-sm btn-danger" id="btn-excluir-aluno">
+                            <i class="fas fa-trash"></i> Excluir Aluno
+                        </button>
+                    </div>
+                `;
+
+                // Substituir o container por um clone vazio para limpar event listeners antigos
+                const fresh = originalContainer.cloneNode(false);
+                fresh.innerHTML = html;
+                originalContainer.parentNode.replaceChild(fresh, originalContainer);
+
+                // Re-referenciar o container atual
                 const container = document.getElementById('historico-container');
                 if (!container) return;
 
-                if (data && Array.isArray(data.checkins) && data.checkins.length > 0) {
-                    container.innerHTML = `
-                        <table class="historico-table">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Tipo do Treino</th>
-                                    <th>Horário</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.checkins.map(c => `
-                                    <tr class="historico-row" data-checkin-id="${c.id}" data-checkin-data="${c.data}" data-checkin-aula="${c.nome_aula}" data-checkin-hora="${c.hora}" data-checkin-status="${c.status}">
-                                        <td>${c.data}</td>
-                                        <td>${c.nome_aula}</td>
-                                        <td>${c.hora}</td>
-                                        <td>
-                                            <span class="status-badge status-${c.status}">
-                                                <i class="fas ${c.status === 'aprovado' ? 'fa-check-circle' : c.status === 'reprovado' ? 'fa-times-circle' : 'fa-clock'}"></i>
-                                                ${c.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                        <div class="historico-actions">
-                            <button type="button" class="btn btn-sm btn-danger" id="btn-excluir-aluno">
-                                <i class="fas fa-trash"></i> Excluir Aluno
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <div class="search-no-results">Nenhum histórico de presença encontrado</div>
-                        <div class="historico-actions">
-                            <button type="button" class="btn btn-sm btn-danger" id="btn-excluir-aluno">
-                                <i class="fas fa-trash"></i> Excluir Aluno
-                            </button>
-                        </div>
-                    `;
+                // Configurar botão de excluir aluno (se houver)
+                const btnExcluir = container.querySelector('#btn-excluir-aluno');
+                if (btnExcluir && aluno) {
+                    btnExcluir.addEventListener('click', () => {
+                        if (!confirm(`Tem certeza que deseja excluir o aluno "${aluno.nome}"?\n\nEsta ação não pode ser desfeita e removerá:\n- Todos os horários do aluno\n- Todo o histórico de presença\n- Todos os check-ins`)) return;
+                        if (!confirm('ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nConfirma a exclusão do aluno?')) return;
+
+                        const originalText = btnExcluir.innerHTML;
+                        btnExcluir.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+                        btnExcluir.disabled = true;
+
+                        fetch('php/excluir_aluno.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `aluno_id=${encodeURIComponent(aluno.id)}`
+                        })
+                        .then(r => r.json())
+                        .then(resp => {
+                            if (resp && resp.ok) {
+                                const alunosContainer = document.getElementById('alunos_container');
+                                if (alunosContainer) {
+                                    alunosContainer.innerHTML = `
+                                        <div class="search-no-results">
+                                            <i class="fas fa-check-circle" style="color: #28a745; font-size: 2rem; margin-bottom: 1rem;"></i>
+                                            <h4>Aluno excluído com sucesso!</h4>
+                                            <p>O aluno "${escapeHtml(aluno.nome)}" foi removido do sistema.</p>
+                                            <button type="button" class="btn btn-sm" onclick="location.reload()">
+                                                <i class="fas fa-refresh"></i> Atualizar Página
+                                            </button>
+                                        </div>
+                                    `;
+                                }
+                            } else {
+                                alert('Erro ao excluir aluno: ' + (resp.message || 'Erro desconhecido'));
+                                btnExcluir.innerHTML = originalText;
+                                btnExcluir.disabled = false;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Erro:', err);
+                            alert('Erro ao excluir aluno. Tente novamente.');
+                            btnExcluir.innerHTML = originalText;
+                            btnExcluir.disabled = false;
+                        });
+                    });
                 }
+
+                // Implementar detecção de duplo clique via timing como fallback
+                let lastClick = { time: 0, row: null };
+                const DOUBLE_CLICK_MS = 350; // threshold
+
+                container.addEventListener('click', (e) => {
+                    const row = e.target && e.target.closest ? e.target.closest('.historico-row') : null;
+                    if (!row) return;
+
+                    const now = Date.now();
+
+                    // Se o mesmo elemento foi clicado novamente dentro do threshold, tratar como dblclick
+                    if (lastClick.row === row && (now - lastClick.time) <= DOUBLE_CLICK_MS) {
+                        console.debug('Fallback dblclick detectado via timing para row', row);
+
+                        // Resetar estado
+                        lastClick.time = 0;
+                        lastClick.row = null;
+
+                        // Garantir seleção visual
+                        const prev = container.querySelector('.historico-row.selected');
+                        if (prev && prev !== row) prev.classList.remove('selected');
+                        if (!row.classList.contains('selected')) row.classList.add('selected');
+
+                        const checkin = {
+                            id: row.getAttribute('data-checkin-id'),
+                            data: row.getAttribute('data-checkin-data'),
+                            aula: row.getAttribute('data-checkin-aula'),
+                            hora: row.getAttribute('data-checkin-hora'),
+                            status: row.getAttribute('data-checkin-status')
+                        };
+
+                        console.debug('Fallback abrirModalCheckin:', checkin);
+
+                        try {
+                            if (typeof abrirModalCheckin === 'function') {
+                                abrirModalCheckin(checkin);
+                            } else {
+                                console.error('abrirModalCheckin não disponível (fallback)');
+                            }
+                        } catch (err) {
+                            console.error('Erro ao abrir modal de checkin (fallback):', err);
+                        }
+
+                        return;
+                    }
+
+                    // Caso não seja duplo clique ainda, apenas atualizar estado e fazer seleção simples
+                    lastClick.time = now;
+                    lastClick.row = row;
+
+                    const prev = container.querySelector('.historico-row.selected');
+                    if (prev && prev !== row) prev.classList.remove('selected');
+
+                    row.classList.toggle('selected');
+                });
+
+                // Também manter o listener nativo de dblclick para o comportamento padrão
+                container.addEventListener('dblclick', (e) => {
+                    const row = e.target && e.target.closest ? e.target.closest('.historico-row') : null;
+                    if (!row) return;
+
+                    console.debug('Evento nativo dblclick recebido para row', row);
+
+                    // Garantir seleção visual
+                    const prev = container.querySelector('.historico-row.selected');
+                    if (prev && prev !== row) prev.classList.remove('selected');
+                    if (!row.classList.contains('selected')) row.classList.add('selected');
+
+                    const checkin = {
+                        id: row.getAttribute('data-checkin-id'),
+                        data: row.getAttribute('data-checkin-data'),
+                        aula: row.getAttribute('data-checkin-aula'),
+                        hora: row.getAttribute('data-checkin-hora'),
+                        status: row.getAttribute('data-checkin-status')
+                    };
+
+                    console.debug('Native dblclick abrirModalCheckin:', checkin);
+
+                    try {
+                        if (typeof abrirModalCheckin === 'function') {
+                            abrirModalCheckin(checkin);
+                        } else {
+                            console.error('abrirModalCheckin não disponível (native)');
+                        }
+                    } catch (err) {
+                        console.error('Erro ao abrir modal de checkin (native):', err);
+                    }
+                });
             })
             .catch(err => {
-                console.error("Erro ao carregar histórico:", err);
+                console.error('Erro ao carregar histórico:', err);
                 const container = document.getElementById('historico-container');
                 if (container) {
                     container.innerHTML = `
@@ -315,92 +391,6 @@ window.addEventListener('load', () => {
                     `;
                 }
             });
-            
-            // Adicionar event listeners
-            setTimeout(() => {
-                // Event listener para o botão de excluir aluno
-                const btnExcluir = document.getElementById('btn-excluir-aluno');
-                if (btnExcluir && aluno) {
-                    // Remover event listener anterior se existir
-                    btnExcluir.replaceWith(btnExcluir.cloneNode(true));
-                    const newBtnExcluir = document.getElementById('btn-excluir-aluno');
-                    
-                    newBtnExcluir.addEventListener('click', () => {
-                        if (!confirm(`Tem certeza que deseja excluir o aluno "${aluno.nome}"?\n\nEsta ação não pode ser desfeita e removerá:\n- Todos os horários do aluno\n- Todo o histórico de presença\n- Todos os check-ins`)) {
-                            return;
-                        }
-                        
-                        if (!confirm('ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nConfirma a exclusão do aluno?')) {
-                            return;
-                        }
-                        
-                        // Mostrar loading no botão
-                        const originalText = newBtnExcluir.innerHTML;
-                        newBtnExcluir.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
-                        newBtnExcluir.disabled = true;
-                        
-                        fetch('php/excluir_aluno.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: `aluno_id=${encodeURIComponent(aluno.id)}`
-                        })
-                        .then(r => r.json())
-                        .then(resp => {
-                            if (resp && resp.ok) {
-                                // Limpar área de alunos e mostrar mensagem
-                                const alunosContainer = document.getElementById('alunos_container');
-                                alunosContainer.innerHTML = `
-                                    <div class="search-no-results">
-                                        <i class="fas fa-check-circle" style="color: #28a745; font-size: 2rem; margin-bottom: 1rem;"></i>
-                                        <h4>Aluno excluído com sucesso!</h4>
-                                        <p>O aluno "${aluno.nome}" foi removido do sistema.</p>
-                                        <button type="button" class="btn btn-sm" onclick="location.reload()">
-                                            <i class="fas fa-refresh"></i> Atualizar Página
-                                        </button>
-                                    </div>
-                                `;
-                            } else {
-                                alert('Erro ao excluir aluno: ' + (resp.message || 'Erro desconhecido'));
-                                newBtnExcluir.innerHTML = originalText;
-                                newBtnExcluir.disabled = false;
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Erro:', err);
-                            alert('Erro ao excluir aluno. Tente novamente.');
-                            newBtnExcluir.innerHTML = originalText;
-                            newBtnExcluir.disabled = false;
-                        });
-                    });
-                }
-
-                // Event listeners para duplo clique nas linhas da tabela
-                const historicoRows = document.querySelectorAll('.historico-row');
-                historicoRows.forEach(row => {
-                    // Remover event listener anterior se existir
-                    row.replaceWith(row.cloneNode(true));
-                });
-                
-                // Re-buscar as linhas após o replaceWith
-                const newHistoricoRows = document.querySelectorAll('.historico-row');
-                newHistoricoRows.forEach(row => {
-                    row.addEventListener('dblclick', () => {
-                        const checkinId = row.getAttribute('data-checkin-id');
-                        const checkinData = row.getAttribute('data-checkin-data');
-                        const checkinAula = row.getAttribute('data-checkin-aula');
-                        const checkinHora = row.getAttribute('data-checkin-hora');
-                        const checkinStatus = row.getAttribute('data-checkin-status');
-                        
-                        abrirModalCheckin({
-                            id: checkinId,
-                            data: checkinData,
-                            aula: checkinAula,
-                            hora: checkinHora,
-                            status: checkinStatus
-                        });
-                    });
-                });
-            }, 100);
     }
 
     // Função para exibir apenas o aluno selecionado
@@ -517,10 +507,14 @@ window.addEventListener('load', () => {
                     <button type="button" class="btn btn-sm" id="btn-exibir-horarios">
                         <i class="fas fa-calendar"></i> Exibir Horários
                     </button>
+                    <button type="button" class="btn btn-sm btn-danger" id="btn-remover-vinculo" ${aluno.membership_id ? '' : 'disabled'} style="margin-left:0.5rem;">
+                        <i class="fas fa-trash"></i> Remover vínculo
+                    </button>
                 `;
 
                 const btnExibir = document.getElementById('btn-exibir-horarios');
                 const btnAdicionarHorarios = document.getElementById('btn-adicionar-horarios');
+                const btnRemoverVinculo = document.getElementById('btn-remover-vinculo');
                 
                 if (btnExibir) {
                     btnExibir.addEventListener('click', () => {
@@ -686,6 +680,63 @@ window.addEventListener('load', () => {
                                 lista.innerHTML = '<div class="search-no-results">Nenhum horário vinculado a este aluno</div>';
                             }
                         }
+                    });
+                }
+
+                // Handler para remover vínculo (apenas se existir membership_id)
+                if (btnRemoverVinculo) {
+                    btnRemoverVinculo.addEventListener('click', () => {
+                        const membershipId = aluno.membership_id || null;
+                        if (!membershipId) {
+                            alert('ID do vínculo não disponível para este aluno.');
+                            return;
+                        }
+
+                        if (!confirm('Remover vínculo deste aluno com a academia?')) return;
+
+                        const originalHtml = btnRemoverVinculo.innerHTML;
+                        btnRemoverVinculo.disabled = true;
+                        btnRemoverVinculo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removendo...';
+
+                        fetch('php/confirmar_vinculo.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'acao=' + encodeURIComponent('prof_rejeitar') + '&membership_id=' + encodeURIComponent(membershipId)
+                        })
+                        .then(r => r.json())
+                        .then(resp => {
+                            if (resp && resp.ok) {
+                                // Fechar card de aluno selecionado
+                                const btnFecharCard = document.getElementById('btn-fechar-card');
+                                if (btnFecharCard) {
+                                    btnFecharCard.click();
+                                } else {
+                                    const alunosContainer = document.getElementById('alunos_container');
+                                    if (alunosContainer) {
+                                        alunosContainer.innerHTML = `
+                                            <div class="no-aluno-selected">
+                                                <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                                                <h3>Selecione um aluno</h3>
+                                                <p>Use a barra de pesquisa acima para encontrar e selecionar um aluno.</p>
+                                            </div>
+                                        `;
+                                    }
+                                }
+
+                                // Recarregar lista de alunos
+                                try { loadAlunosAcademia(true); } catch (e) { console.warn('Não foi possível recarregar a lista de alunos:', e); }
+                            } else {
+                                alert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                                btnRemoverVinculo.disabled = false;
+                                btnRemoverVinculo.innerHTML = originalHtml;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Erro ao remover vínculo:', err);
+                            alert('Erro ao remover vínculo. Veja o console para mais detalhes.');
+                            btnRemoverVinculo.disabled = false;
+                            btnRemoverVinculo.innerHTML = originalHtml;
+                        });
                     });
                 }
                 if (btnAdicionarHorarios) {
@@ -893,7 +944,22 @@ window.addEventListener('load', () => {
         const modal = document.getElementById('modal-gerenciar-checkin');
         const checkinInfo = document.getElementById('checkin-info');
         const statusSelect = document.getElementById('checkin-status');
-        
+
+        if (!modal) {
+            console.error('abrirModalCheckin: elemento #modal-gerenciar-checkin não encontrado');
+            return;
+        }
+        if (!checkinInfo) {
+            console.error('abrirModalCheckin: elemento #checkin-info não encontrado');
+            return;
+        }
+        if (!statusSelect) {
+            console.error('abrirModalCheckin: elemento #checkin-status não encontrado');
+            return;
+        }
+
+        console.debug('abrirModalCheckin recebendo:', checkin);
+
         // Preencher informações do check-in
         checkinInfo.innerHTML = `
             <div class="checkin-details">
@@ -916,20 +982,24 @@ window.addEventListener('load', () => {
                 </div>
             </div>
         `;
-        
+
         // Definir status atual no select
-        statusSelect.value = checkin.status;
-        
+        try {
+            statusSelect.value = checkin.status;
+        } catch (err) {
+            console.warn('Não foi possível definir value do select #checkin-status:', err);
+        }
+
         // Armazenar dados do check-in para uso posterior
-        modal.dataset.checkinId = checkin.id;
-        modal.dataset.checkinData = checkin.data;
-        modal.dataset.checkinAula = checkin.aula;
-        modal.dataset.checkinHora = checkin.hora;
-        modal.dataset.checkinStatus = checkin.status;
-        
+        modal.dataset.checkinId = checkin.id || '';
+        modal.dataset.checkinData = checkin.data || '';
+        modal.dataset.checkinAula = checkin.aula || '';
+        modal.dataset.checkinHora = checkin.hora || '';
+        modal.dataset.checkinStatus = checkin.status || '';
+
         // Adicionar event listeners se ainda não foram adicionados
         adicionarEventListenersModalCheckin();
-        
+
         // Mostrar modal
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -947,6 +1017,12 @@ window.addEventListener('load', () => {
         
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
+        // Remover seleção visual do histórico ao fechar modal (evita estado residual)
+        const historicoContainerEl = document.getElementById('historico-container');
+        if (historicoContainerEl) {
+            const selected = historicoContainerEl.querySelector('.historico-row.selected');
+            if (selected) selected.classList.remove('selected');
+        }
     }
 
     function adicionarEventListenersModalCheckin() {
@@ -1442,25 +1518,225 @@ window.addEventListener('load', () => {
         }
     });
 
-    // Tab switching
+    // Tab switching (use closest to support clicks nos ícones/textos internos)
     document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('tab-btn')) {
-            console.log('Tab clicked:', e.target.getAttribute('data-tab'));
-            const tabName = e.target.getAttribute('data-tab');
-            
-            // Remove active from all tabs and content
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // Add active to clicked tab and corresponding content
-            e.target.classList.add('active');
-            const targetContent = document.getElementById('tab-' + tabName);
-            if (targetContent) {
-                targetContent.classList.add('active');
-                console.log('Tab activated:', tabName);
-            } else {
-                console.error('Tab content not found:', 'tab-' + tabName);
+        const btn = e.target.closest && e.target.closest('.tab-btn');
+        if (!btn) return;
+
+        const tabName = btn.getAttribute('data-tab');
+        console.log('Tab clicked (resolved):', tabName);
+
+        // Remove active from all tabs and content
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        // Add active to clicked tab and corresponding content
+        btn.classList.add('active');
+        const targetContent = document.getElementById('tab-' + tabName);
+        if (targetContent) {
+            targetContent.classList.add('active');
+            console.log('Tab activated:', tabName);
+            // Se ativou a aba de alunos, carregar a tabela de alunos associados
+            if (tabName === 'alunos') {
+                loadAlunosAcademia();
             }
+        } else {
+            console.error('Tab content not found:', 'tab-' + tabName);
+        }
+    });
+
+    // Carregar alunos da academia (apenas aprovados) com cache simples
+    let alunosAcademiaCache = null;
+    function loadAlunosAcademia(forceReload = false) {
+        const tableContainer = document.getElementById('alunos_table_container');
+        const tableArea = document.getElementById('alunos_table_area');
+        if (!tableArea || !tableContainer) return;
+
+        tableContainer.style.display = 'block';
+
+        if (alunosAcademiaCache && !forceReload) {
+            renderAlunosTable(alunosAcademiaCache, tableArea);
+            return;
+        }
+
+        tableArea.innerHTML = '<div class="table-loading"><i class="fas fa-spinner fa-spin"></i> Carregando alunos...</div>';
+
+        fetch('php/get_alunos_academia.php')
+            .then(r => {
+                if (!r.ok) throw new Error('Resposta HTTP: ' + r.status);
+                return r.json();
+            })
+            .then(data => {
+                console.log('Resposta get_alunos_academia:', data);
+                if (data && data.erro) {
+                    tableArea.innerHTML = `<div class="search-no-results">Erro: ${data.erro}</div>`;
+                    return;
+                }
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    // fallback: usar lista de alunos retornada por get_professor.php (não filtrada)
+                    const fallback = window._professorData && Array.isArray(window._professorData.alunos) ? window._professorData.alunos : null;
+                    if (fallback && fallback.length) {
+                        tableArea.innerHTML = '<div class="search-no-results">Nenhum vínculo aprovado encontrado — exibindo lista geral de alunos (fallback)</div>';
+                        renderAlunosTable(fallback, tableArea);
+                        alunosAcademiaCache = fallback;
+                        return;
+                    }
+
+                    tableArea.innerHTML = '<div class="search-no-results">Nenhum aluno vinculado a esta academia</div>';
+                    alunosAcademiaCache = [];
+                    return;
+                }
+
+                alunosAcademiaCache = data;
+                renderAlunosTable(data, tableArea);
+            })
+            .catch(err => {
+                console.error('Erro ao carregar alunos da academia:', err);
+                tableArea.innerHTML = '<div class="search-no-results">Erro ao carregar alunos. Veja o console para detalhes.</div>';
+            });
+    }
+
+    function renderAlunosTable(data, tableArea) {
+        // Mostrar apenas: Nome, Email, Faixa, Grau
+        const rows = data.map(a => `
+            <tr data-id="${a.id}" data-membership="${a.membership_id || ''}" data-nome="${encodeURIComponent(a.nome || '')}" data-email="${encodeURIComponent(a.email || '')}" data-faixa="${encodeURIComponent(a.faixa || '')}" data-graus="${a.graus || 0}" data-aulas="${typeof a.aulas_faltando !== 'undefined' ? a.aulas_faltando : 0}">
+                <td>${escapeHtml(a.nome)}</td>
+                <td>${escapeHtml(a.email)}</td>
+                <td>${escapeHtml(a.faixa || '')}</td>
+                <td>${a.graus || 0}</td>
+            </tr>
+        `).join('');
+
+        tableArea.innerHTML = `
+            <table class="aluno-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Faixa</th>
+                        <th>Grau</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        `;
+
+        // Tornar linhas clicáveis e exibir dados no card de aluno
+        const linhas = tableArea.querySelectorAll('table.aluno-table tbody tr');
+        linhas.forEach(row => {
+            row.style.cursor = 'default';
+
+            // Abrir via botão 'Abrir'
+            const btnOpen = row.querySelector('.btn-open-row');
+            if (btnOpen) {
+                btnOpen.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    linhas.forEach(r => r.classList.remove('selected'));
+                    row.classList.add('selected');
+
+                    const id = row.getAttribute('data-id');
+                    const nome = decodeURIComponent(row.getAttribute('data-nome') || '');
+                    const email = decodeURIComponent(row.getAttribute('data-email') || '');
+                    const faixa = decodeURIComponent(row.getAttribute('data-faixa') || '');
+                    const graus = parseInt(row.getAttribute('data-graus') || '0', 10);
+                    const aulas = parseInt(row.getAttribute('data-aulas') || '0', 10);
+                    const membership = row.getAttribute('data-membership') || null;
+
+                    if (window.selecionarAluno) {
+                        window.selecionarAluno(id, nome, email, faixa, graus, aulas, membership);
+                    } else if (typeof exibirAlunoSelecionado === 'function') {
+                        exibirAlunoSelecionado({ id: id, nome: nome, email: email, faixa: faixa, graus: graus, aulas_faltando: aulas, membership_id: membership });
+                    }
+                });
+            }
+
+            // Remover vínculo
+            const btnRemove = row.querySelector('.btn-remove-membership');
+            if (btnRemove) {
+                btnRemove.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const membershipId = row.getAttribute('data-membership');
+                    if (!membershipId) {
+                        alert('Membership ID não disponível para este registro');
+                        return;
+                    }
+
+                    if (!confirm('Remover vínculo deste aluno com a academia?')) return;
+
+                    btnRemove.disabled = true;
+                    btnRemove.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removendo...';
+
+                    fetch('php/confirmar_vinculo.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `acao=${encodeURIComponent('prof_rejeitar')}&membership_id=${encodeURIComponent(membershipId)}`
+                    })
+                    .then(r => r.json())
+                    .then(resp => {
+                        if (resp && resp.ok) {
+                            // remover a linha da tabela
+                            row.remove();
+                        } else {
+                            alert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                            btnRemove.disabled = false;
+                            btnRemove.innerHTML = 'Remover vínculo';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Erro ao remover vínculo:', err);
+                        alert('Erro ao remover vínculo. Veja console.');
+                        btnRemove.disabled = false;
+                        btnRemove.innerHTML = 'Remover vínculo';
+                    });
+                });
+            }
+
+            // Duplo clique na linha: abrir diretamente no card do aluno
+            row.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                const id = row.getAttribute('data-id');
+                const nome = decodeURIComponent(row.getAttribute('data-nome') || '');
+                const email = decodeURIComponent(row.getAttribute('data-email') || '');
+                const faixa = decodeURIComponent(row.getAttribute('data-faixa') || '');
+                const graus = parseInt(row.getAttribute('data-graus') || '0', 10);
+                const aulas = parseInt(row.getAttribute('data-aulas') || '0', 10);
+
+                console.debug('alunos table dblclick abrir aluno:', { id, nome, email, faixa, graus, aulas });
+
+                if (window.selecionarAluno) {
+                    window.selecionarAluno(id, nome, email, faixa, graus, aulas);
+                } else if (typeof exibirAlunoSelecionado === 'function') {
+                    exibirAlunoSelecionado({ id: id, nome: nome, email: email, faixa: faixa, graus: graus, aulas_faltando: aulas });
+                }
+            });
+        });
+    }
+
+    // Pequena função utilitária para escapar HTML em valores inseridos na tabela
+    function escapeHtml(str) {
+        if (!str && str !== 0) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // Ligar botão de recarregar alunos
+    const btnRecarregarAlunos = document.getElementById('btn-recarregar-alunos');
+    if (btnRecarregarAlunos) {
+        btnRecarregarAlunos.addEventListener('click', () => loadAlunosAcademia(true));
+    }
+
+    // Se a aba 'alunos' já estiver ativa ao carregar a página, carregue a tabela
+    document.addEventListener('DOMContentLoaded', () => {
+        const activeTab = document.querySelector('.tab-btn.active');
+        if (activeTab && activeTab.getAttribute('data-tab') === 'alunos') {
+            loadAlunosAcademia();
         }
     });
 
@@ -1480,6 +1756,7 @@ window.addEventListener('load', () => {
                 const acad = academias[0];
 
                 document.getElementById('conta-nome').value = prof.nome || '';
+                document.getElementById('conta-apelido').value = prof.apelido || '';
                 document.getElementById('conta-email').value = prof.email || '';
                 if (acad) {
                     document.getElementById('conta-academia').value = acad.nome || '';
@@ -1529,11 +1806,11 @@ window.addEventListener('load', () => {
             if (!confirm('ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja excluir sua conta?\n\nIsso removerá:\n- Sua conta de professor\n- Todas as academias associadas\n- Todos os dados relacionados')) {
                 return;
             }
-            
+
             if (!confirm('ÚLTIMA CONFIRMAÇÃO: Excluir conta permanentemente?')) {
                 return;
             }
-            
+
             fetch('php/excluir_professor.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -1554,4 +1831,60 @@ window.addEventListener('load', () => {
             });
         });
     }
+
+    // Listener global delegado para dblclick em linhas do histórico.
+    // Isso garante que, mesmo após re-renderizações ou problemas de binding local,
+    // um duplo clique em `.historico-row` abra o modal de gerenciamento do check-in.
+    document.addEventListener('dblclick', function(e) {
+        try {
+            const row = e.target && e.target.closest ? e.target.closest('.historico-row') : null;
+            if (!row) return; // não é uma linha do histórico
+
+            const modal = document.getElementById('modal-gerenciar-checkin');
+            if (modal && modal.style.display === 'flex') {
+                // Modal já aberto, ignorar
+                console.debug('dblclick: modal já aberto, ignorando');
+                return;
+            }
+
+            // Assegurar que a linha esteja dentro do container esperado
+            const historicoContainerEl = row.closest('#historico-container');
+            if (!historicoContainerEl) {
+                console.debug('dblclick: linha historico não está dentro de #historico-container, ignorando');
+                return;
+            }
+
+            console.debug('dblclick global detectado em .historico-row:', row);
+
+            // Seleção visual
+            const prev = historicoContainerEl.querySelector('.historico-row.selected');
+            if (prev && prev !== row) prev.classList.remove('selected');
+            if (!row.classList.contains('selected')) row.classList.add('selected');
+
+            // Extrair atributos do data-*
+            const checkinId = row.getAttribute('data-checkin-id');
+            const checkinData = row.getAttribute('data-checkin-data');
+            const checkinAula = row.getAttribute('data-checkin-aula');
+            const checkinHora = row.getAttribute('data-checkin-hora');
+            const checkinStatus = row.getAttribute('data-checkin-status');
+
+            console.debug('dblclick: abrir modal checkin id=', checkinId, 'data=', checkinData, 'aula=', checkinAula, 'hora=', checkinHora, 'status=', checkinStatus);
+
+            // Pequeno delay para percepção da animação de seleção
+            setTimeout(() => {
+                try {
+                    if (typeof abrirModalCheckin === 'function') {
+                        abrirModalCheckin({ id: checkinId, data: checkinData, aula: checkinAula, hora: checkinHora, status: checkinStatus });
+                    } else {
+                        console.error('abrirModalCheckin não é uma função ou não está no escopo');
+                    }
+                } catch (err) {
+                    console.error('Erro ao chamar abrirModalCheckin via listener global:', err);
+                }
+            }, 80);
+        } catch (err) {
+            console.error('Erro no handler global de dblclick:', err);
+        }
+    });
+
 });

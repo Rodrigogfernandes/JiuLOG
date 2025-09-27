@@ -31,6 +31,10 @@ if (!columnExists($conn, 'usuarios', 'graus')) {
     $conn->query("ALTER TABLE usuarios ADD COLUMN graus TINYINT UNSIGNED DEFAULT 0");
     $messages[] = "Added usuarios.graus";
 }
+if (!columnExists($conn, 'usuarios', 'apelido')) {
+    $conn->query("ALTER TABLE usuarios ADD COLUMN apelido VARCHAR(100) DEFAULT NULL");
+    $messages[] = "Added usuarios.apelido";
+}
 if (!columnExists($conn, 'usuarios', 'aulas_faltando')) {
     $conn->query("ALTER TABLE usuarios ADD COLUMN aulas_faltando INT DEFAULT 55");
     $messages[] = "Added usuarios.aulas_faltando";

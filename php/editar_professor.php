@@ -9,6 +9,7 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] != 'professor') {
 $professor_id = $_SESSION['user_id'];
 $nome = trim($_POST['nome'] ?? '');
 $email = trim($_POST['email'] ?? '');
+$apelido = trim($_POST['apelido'] ?? '');
 $nova_senha = trim($_POST['nova_senha'] ?? '');
 $academia_nome = trim($_POST['academia_nome'] ?? '');
 
@@ -23,9 +24,9 @@ if ($check && $check->num_rows > 0) {
 }
 
 // Atualizar dados do professor
-$sql = "UPDATE usuarios SET nome=?, email=?";
-$params = [$nome, $email];
-$types = "ss";
+$sql = "UPDATE usuarios SET nome=?, email=?, apelido=?";
+$params = [$nome, $email, $apelido];
+$types = "sss";
 
 if (!empty($nova_senha)) {
     $sql .= ", senha=?";

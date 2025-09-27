@@ -9,7 +9,7 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] != 'professor') {
 $professor_id = $_SESSION['user_id'];
 
 // Dados do professor
-$prof = $conn->query("SELECT id,nome,email FROM usuarios WHERE id=$professor_id")->fetch_assoc();
+$prof = $conn->query("SELECT id,nome,email, apelido FROM usuarios WHERE id=$professor_id")->fetch_assoc();
 
 // Academias do professor
 $academias = [];

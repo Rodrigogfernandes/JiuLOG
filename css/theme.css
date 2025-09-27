@@ -400,7 +400,7 @@ header {
 header h2 {
     margin: 0;
     color: var(--primary-color);
-    font-size: 1.5rem;
+    font-size: 1rem;
     flex: 1;
 }
 
@@ -1736,6 +1736,33 @@ header div {
     background: rgba(230, 0, 0, 0.05);
 }
 
+/* Linhas do histórico - tornar clicáveis e destacar seleção */
+.historico-row {
+    cursor: pointer;
+}
+
+.historico-row.selected {
+    background: rgba(230, 0, 0, 0.12);
+    border-left: 4px solid var(--primary-color);
+}
+
+.historico-row.selected td {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Animação leve quando a linha é selecionada */
+.historico-row.selected {
+    transform-origin: left center;
+    animation: selectPop 220ms ease;
+}
+
+@keyframes selectPop {
+    0% { transform: scaleX(0.995); box-shadow: 0 0 0 rgba(0,0,0,0); }
+    50% { transform: scaleX(1.01); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+    100% { transform: scaleX(1); box-shadow: none; }
+}
+
 /* Badges de status */
 .status-badge {
     display: inline-flex;
@@ -1939,4 +1966,10 @@ header div {
 
 #solicitacoes_container .btn {
     margin-right: 6px;
+}
+
+/* Destaque para linha selecionada em tabelas de alunos */
+.aluno-table tbody tr.selected {
+    background: rgba(102, 126, 234, 0.06);
+    border-left: 4px solid var(--secondary-color);
 }
