@@ -1,4 +1,39 @@
 window.addEventListener('load', () => {
+    // Abas na página do aluno: comportamento simples
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest && e.target.closest('.tab-btn');
+        if (!btn) return;
+        const tabName = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        const target = document.getElementById('tab-' + tabName);
+        if (target) target.classList.add('active');
+    });
+
+    // Handler para checkin livre (data atual)
+    const btnCheckinLivre = document.getElementById('btn-checkin-livre');
+    if (btnCheckinLivre) {
+        btnCheckinLivre.addEventListener('click', () => {
+            const data = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+            if (!confirm('Marcar presença livre para hoje (' + data + ')?')) return;
+            btnCheckinLivre.disabled = true;
+            btnCheckinLivre.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            fetch('php/checkin_livre.php', {
+                method: 'POST',
+                headers: {'Content-Type':'application/x-www-form-urlencoded'},
+                body: 'data=' + encodeURIComponent(data)
+            }).then(r => {
+                // redirecionamentos do PHP devolvem HTML; forçar reload
+                location.reload();
+            }).catch(err => {
+                console.error('Erro ao enviar checkin livre:', err);
+                alert('Erro ao marcar presença. Veja console.');
+                btnCheckinLivre.disabled = false;
+                btnCheckinLivre.innerHTML = '<i class="fas fa-check"></i> Marcar presença (Livre)';
+            });
+        });
+    }
     fetch('php/get_aluno.php')
     .then(response => response.json())
     .then(data => {
@@ -104,14 +139,18 @@ function criarTabelaHorariosTreino(horarios, container) {
                     <th><i class="fas fa-calendar-day"></i> Dia da Semana</th>
                     <th><i class="fas fa-clock"></i> Horário</th>
                     <th><i class="fas fa-dumbbell"></i> Tipo de Treino</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 ${horariosOrdenados.map(h => `
-                    <tr>
+                    <tr data-horario-id="${h.id}">
                         <td><strong>${h.dia_semana}</strong></td>
                         <td>${h.hora}</td>
                         <td>${h.nome_aula}</td>
+                        <td style="white-space:nowrap;">
+                            <button class="btn btn-sm btn-primary btn-marcar-presenca" data-horario-id="${h.id}"><i class="fas fa-check"></i> Marcar presença</button>
+                        </td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -119,6 +158,33 @@ function criarTabelaHorariosTreino(horarios, container) {
     `;
 
     container.innerHTML = tabelaHTML;
+
+    // Adicionar listeners para botões de marcar presença por horário
+    container.querySelectorAll('.btn-marcar-presenca').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const horarioId = btn.getAttribute('data-horario-id');
+            const data = new Date().toISOString().slice(0,10);
+            if (!confirm('Marcar presença para o horário selecionado em ' + data + '?')) return;
+            btn.disabled = true;
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+            fetch('php/checkin.php', {
+                method: 'POST',
+                headers: {'Content-Type':'application/x-www-form-urlencoded'},
+                body: 'horario_id=' + encodeURIComponent(horarioId) + '&data=' + encodeURIComponent(data)
+            }).then(r => {
+                // O backend redireciona para a dashboard; forçar reload para ver atualização
+                location.reload();
+            }).catch(err => {
+                console.error('Erro ao marcar presença:', err);
+                alert('Erro ao marcar presença. Veja console.');
+                btn.disabled = false;
+                btn.innerHTML = original;
+            });
+        });
+    });
 }
 
 function criarTabelaHistoricoPresenca(checkins, container) {

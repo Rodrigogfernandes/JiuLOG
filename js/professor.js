@@ -78,6 +78,17 @@ window.addEventListener('load', () => {
                     });
                 }
             }
+            // Renderizar check-ins pendentes (se houver)
+            try {
+                if (typeof renderPendingCheckins === 'function') {
+                    renderPendingCheckins(data.checkins || []);
+                } else {
+                    // Em caso de load order, definir global para uso posterior
+                    window._professorPendingCheckins = data.checkins || [];
+                }
+            } catch (e) {
+                console.error('Erro ao renderizar check-ins pendentes:', e);
+            }
         })
         .catch(err => {
             console.error("Erro ao carregar dados do professor:", err);
@@ -1526,6 +1537,18 @@ window.addEventListener('load', () => {
         }
     });
 
+    // Se os dados de checkins foram carregados antes da definição desta função,
+    // renderizá-los agora a partir do storage global
+    try {
+        if (window._professorPendingCheckins && typeof renderPendingCheckins === 'function') {
+            renderPendingCheckins(window._professorPendingCheckins);
+            // limpar
+            delete window._professorPendingCheckins;
+        }
+    } catch (e) {
+        console.error('Erro no fallback de renderPendingCheckins:', e);
+    }
+
     // Tab switching (use closest to support clicks nos ícones/textos internos)
     document.addEventListener('click', function(e) {
         const btn = e.target.closest && e.target.closest('.tab-btn');
@@ -1732,6 +1755,111 @@ window.addEventListener('load', () => {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
+    }
+
+    // Renderizar lista de check-ins pendentes na aba "Check-ins"
+    function renderPendingCheckins(checkins) {
+        const container = document.getElementById('checkins_container');
+        if (!container) return;
+
+        if (!Array.isArray(checkins) || checkins.length === 0) {
+            container.innerHTML = '<div class="search-no-results">Nenhum check-in pendente</div>';
+            return;
+        }
+
+        // Construir cards simples para cada checkin com botões Aceitar / Rejeitar
+        let html = checkins.map(c => {
+            const aluno = escapeHtml(c.aluno_nome || 'Aluno');
+            const aula = escapeHtml(c.nome_aula || 'Check-in Livre');
+            const hora = escapeHtml(c.hora || '');
+            const data = escapeHtml(c.data || '');
+            const id = escapeHtml(c.id || '');
+
+            return `
+                <div class="checkin-card card" data-checkin-id="${id}">
+                    <div class="checkin-card-body">
+                        <h4>${aluno}</h4>
+                        <div class="checkin-meta">
+                            <div>${aula}</div>
+                            <div>${hora}</div>
+                            <div>${data}</div>
+                        </div>
+                        <div class="checkin-actions">
+                            <button class="btn btn-sm btn-accept" data-checkin-accept="${id}"><i class="fas fa-check"></i> Aceitar</button>
+                            <button class="btn btn-sm btn-reject" data-checkin-reject="${id}"><i class="fas fa-times"></i> Rejeitar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+
+        // Handlers para aceitar/rejeitar
+        container.querySelectorAll('[data-checkin-accept]').forEach(btn => {
+            btn.addEventListener('click', () => handleCheckinAction(btn, 'aprovado', checkins));
+        });
+        container.querySelectorAll('[data-checkin-reject]').forEach(btn => {
+            btn.addEventListener('click', () => handleCheckinAction(btn, 'reprovado', checkins));
+        });
+
+        // Função auxiliar para enviar alteração de status e atualizar UI
+        function handleCheckinAction(button, novoStatus, sourceArray) {
+            const id = button.getAttribute(novoStatus === 'aprovado' ? 'data-checkin-accept' : 'data-checkin-reject');
+            if (!id) return;
+
+            if (!confirm(`Confirma ${novoStatus === 'aprovado' ? 'aceitar' : 'reprovar'} este check-in?`)) return;
+
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+
+            // Desabilitar também o outro botão do card
+            const card = button.closest('.checkin-card');
+            if (card) {
+                const other = card.querySelector(novoStatus === 'aprovado' ? '[data-checkin-reject]' : '[data-checkin-accept]');
+                if (other) other.disabled = true;
+            }
+
+            const body = `checkin_id=${encodeURIComponent(id)}&status=${encodeURIComponent(novoStatus)}`;
+            fetch('php/alterar_status_checkin.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body
+            })
+            .then(r => r.json())
+            .then(resp => {
+                if (resp && resp.ok) {
+                    // Remover card da lista
+                    if (card && card.parentNode) card.parentNode.removeChild(card);
+
+                    // Atualizar array local (opcional)
+                    try {
+                        const idx = sourceArray.findIndex(x => String(x.id) === String(id));
+                        if (idx !== -1) sourceArray.splice(idx, 1);
+                    } catch(e) { /* ignore */ }
+
+                } else {
+                    alert('Erro: ' + (resp && resp.message ? resp.message : 'Erro ao atualizar status'));
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                    if (card) {
+                        const other = card.querySelector(novoStatus === 'aprovado' ? '[data-checkin-reject]' : '[data-checkin-accept]');
+                        if (other) other.disabled = false;
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Erro ao alterar status do checkin:', err);
+                alert('Erro ao processar a solicitação. Veja o console.');
+                button.disabled = false;
+                button.innerHTML = originalText;
+                if (card) {
+                    const other = card.querySelector(novoStatus === 'aprovado' ? '[data-checkin-reject]' : '[data-checkin-accept]');
+                    if (other) other.disabled = false;
+                }
+            });
+        }
     }
 
     // Ligar botão de recarregar alunos
