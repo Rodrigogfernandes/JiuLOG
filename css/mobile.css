@@ -1,0 +1,476 @@
+/* Responsividade para smartphones pequenos */
+@media (max-width: 376px) {
+    .header-title {
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 426px) {
+    .aluno-selecionado {
+        padding: 0.75rem;
+        margin: -0.25rem;
+        border-radius: var(--border-radius-small);
+    }
+
+    .btn-fechar-card {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 0.6rem;
+        top: 0.25rem;
+        right: 0.25rem;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .aluno-info h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .aluno-info p {
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .aluno-stats {
+        gap: 0.4rem;
+    }
+
+    .aluno-stats .badge {
+        min-width: 100px;
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .aluno-actions {
+        gap: 0.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .aluno-actions .btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+        margin: 0.2rem
+    }
+
+    .aluno-form {
+        padding: 0.5rem;
+    }
+
+    .aluno-horarios {
+        padding: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .horario-item {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    .horario-item .info strong {
+        font-size: 0.9rem;
+    }
+
+    .horario-item .info span {
+        font-size: 0.8rem;
+    }
+
+    .horario-actions {
+        gap: 0.4rem;
+    }
+
+    .horario-actions .btn {
+        min-width: 80px;
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem;
+    }
+
+    .aluno-horarios-form h5 {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .aluno-horarios-form .form-group label {
+        font-size: 0.8rem;
+    }
+
+    .aluno-horarios-form input,
+    .aluno-horarios-form select {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .aluno-horarios-form button {
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+
+    .aluno-table {
+        font-size: 0.75rem;
+    }
+
+    .aluno-table th,
+    .aluno-table td {
+        padding: 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .aluno-table th {
+        padding: 0.5rem 0.4rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 426px) {
+    .container {
+        padding: 1.5rem 1rem;
+    }
+
+    .container-dashboard {
+        padding: 0.5rem;
+    }
+
+    .logo {
+        font-size: 2rem;
+    }
+
+    .button-container {
+        gap: 0.8rem;
+    }
+
+    /* .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.7rem;
+    } */
+
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    /* Header mobile mais compacto: empilhar logo + título, botões ocupam largura */
+    .header-left {
+
+        align-items: center;
+        ;
+        gap: 0.4rem;
+    }
+
+    header h2 {
+        font-size: 1.2rem;
+        color: var(--text-primary);
+    }
+
+    .header-actions {
+        justify-content: right;
+    }
+
+    .header-actions .logout-btn {
+        /* width: 40%; */
+        justify-content: center;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+        border-radius: var(--border-radius);
+    }
+
+    .container-dashboard {
+        padding: 1.5rem;
+        margin: 0rem auto;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .logo {
+        font-size: 2.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .btn {
+        padding: 0.6rem .8rem;
+        font-size: 0.7rem;
+    }
+}
+
+.button-row {
+    flex-direction: column;
+}
+
+/* Header: empilhar de forma controlada */
+header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+/* Agrupamento esquerdo (logo + título) deve ocupar 100% e manter alinhamento horizontal */
+.header-left {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+}
+
+/* Ações do header ficam em linha separada e alinhadas à direita */
+.header-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+/* .header-actions .logout-btn {
+        min-width: 120px;
+    } */
+
+
+/* Responsividade para tabela de histórico */
+@media (max-width: 768px) {
+
+    .historico-table th,
+    .historico-table td {
+        padding: 0.3rem;
+        font-size: 0.7rem;
+    }
+
+    .historico-table th {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.3rem;
+    }
+
+    .status-badge {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.6rem;
+    }
+
+    .historico-actions {
+        justify-content: center;
+        padding: 0.5rem 0;
+    }
+
+    .historico-actions .btn {
+        min-width: 100px;
+        font-size: 0.7rem;
+    }
+
+    .tabs-navigation {
+        gap: 0.4rem;
+    }
+
+    .tab-btn {
+        padding: 0.45rem 0.7rem;
+        font-size: 0.9rem;
+    }
+
+    .tab-btn.active::after {
+        left: 8px;
+        right: 8px;
+        bottom: -8px;
+        height: 3px;
+    }
+
+    .tabs-navigation {
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        padding: 0.8rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .aluno-selecionado {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+
+    .btn-fechar-card {
+        width: 1.8rem;
+        height: 1.8rem;
+        font-size: 0.7rem;
+        top: 0.3rem;
+        right: 0.3rem;
+    }
+
+    .aluno-info h4 {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+
+    .aluno-info p {
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .aluno-stats {
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .aluno-stats .badge {
+        width: fit-content;
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .aluno-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .aluno-actions .btn {
+        width: 100%;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .form-row {
+
+        gap: 0.75rem;
+    }
+
+    .aluno-form {
+        padding: 0.75rem;
+    }
+
+    .aluno-horarios {
+        padding: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .horario-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .horario-item .info {
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: center;
+    }
+
+    .horario-item .info strong {
+        font-size: 1rem;
+    }
+
+    .horario-item .info span {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .horario-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .horario-actions .btn {
+        flex: 1;
+        min-width: 100px;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.6rem;
+    }
+
+    .aluno-horarios-form {
+        margin-top: 1rem;
+    }
+
+    .aluno-horarios-form h5 {
+        font-size: 1rem;
+        text-align: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .aluno-horarios-form .form-row {
+        gap: 0.5rem;
+    }
+
+    .aluno-horarios-form .form-group label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .aluno-horarios-form input,
+    .aluno-horarios-form select {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+
+    .aluno-horarios-form button {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .btn-checkin {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.7rem;
+        margin: 0.1rem;
+    }
+
+    .btn-checkin i {
+        font-size: 0.7rem;
+    }
+
+
+    .aluno-table th,
+    .aluno-table td {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .aluno-table th {
+        padding: 0.6rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .status-badge {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+    }
+}

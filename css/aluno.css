@@ -1,25 +1,133 @@
+:root {
+    /* Cores principais */
+    --primary-color: #e60000;
+    --primary-hover: #b30000;
+    --secondary-color: #667eea;
+    --secondary-hover: #764ba2;
+    --accent-color: #ff4444;
+
+    /* Cores de fundo */
+    --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-secondary: rgba(255, 255, 255, 0.95);
+    --bg-card: rgba(255, 255, 255, 0.9);
+
+    /* Cores de texto */
+    --text-primary: #333;
+    --text-secondary: #666;
+    --text-light: #999;
+    --text-white: #fff;
+
+    /* Sombras */
+    --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 8px 20px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.1);
+
+    /* Bordas */
+    --border-radius: 15px;
+    --border-radius-small: 8px;
+    --border-radius-large: 25px;
+    --border-radius-abas: 0 0 15px 15px;
+
+    /* Transições */
+    --transition: all 0.3s ease;
+    --transition-fast: all 0.2s ease;
+}
+
+
 body {
-    font-family: Arial, sans-serif;
-    background: #fff;
-    color: #000;
-    margin: 0;
-    padding: 0;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-primary);
+    min-height: 100vh;
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
 }
 
 header {
     background: #e60000;
     color: #fff;
-    padding: 15px;
+    padding: 5px 15px;
     text-align: center;
-    position: relative; /* necessário para o botão flutuar */
+    position: relative;
+    max-width: 1200px;
+    width: 95%;
+    margin: 10px auto;
+    /* necessário para o botão flutuar */
 }
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+
+.faixa {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* Cores */
+.faixa-branca {
+    background: #fff;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
+.faixa-azul {
+    background: #1e90ff;
+    color: #fff;
+}
+
+.faixa-roxa {
+    background: #8a2be2;
+    color: #fff;
+}
+
+.faixa-marrom {
+    background: #8b4513;
+    color: #fff;
+}
+
+.faixa-preta {
+    background: #000;
+    color: #fff;
+}
+
+.aluno-faixa-grau {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+
+    .aluno-faixa {
+
+        padding: 5px 10px;
+        border-radius: 50px;
+        border: none;
+    }
+
+    .aluno-grau {
+        padding: 5px 10px;
+        border-radius: 50px;
+        border: none;
+    }
+}
+
 
 .container {
     padding: 20px;
 }
 
 /* Horários e check-ins */
-.horario, .checkin {
+.horario,
+.checkin {
     border: 1px solid #e60000;
     padding: 10px;
     margin: 10px 0;
@@ -29,7 +137,8 @@ header {
 
 /* Horário já marcado */
 .horario.checkin-feito {
-    background-color: #ff9999; /* vermelho claro */
+    background-color: #ff9999;
+    /* vermelho claro */
     color: #fff;
     border: 1px solid #b30000;
 }
@@ -40,7 +149,8 @@ header {
 
 /* Botão de logout */
 button.logout-btn {
-    background-color: #e60000; /* vermelho padrão */
+    background-color: #e60000;
+    /* vermelho padrão */
     color: #fff;
     border: none;
     padding: 8px 15px;
@@ -55,6 +165,7 @@ button.logout-btn {
 }
 
 button.logout-btn:hover {
-    background-color: #b30000; /* vermelho mais escuro ao passar mouse */
+    background-color: #b30000;
+    /* vermelho mais escuro ao passar mouse */
     transform: scale(1.05);
 }

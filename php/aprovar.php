@@ -19,12 +19,10 @@ if ($status == 'aprovado') {
     if ($res && $res->num_rows > 0) {
         $aluno_id = $res->fetch_assoc()['aluno_id'];
 
-        // Diminui em 1
-        $conn->query("UPDATE usuarios 
-                      SET aulas_faltando = aulas_faltando - 1 
-                      WHERE id=$aluno_id");
+        // Diminui em 1 no momento da aprovação
+        $conn->query("UPDATE usuarios SET aulas_faltando = aulas_faltando - 1 WHERE id=$aluno_id");
 
-        // Pega dados do aluno
+        // Pega dados do aluno para verificar progressão
         $aluno_res = $conn->query("SELECT faixa, graus, aulas_faltando 
                                    FROM usuarios WHERE id=$aluno_id");
         $aluno = $aluno_res->fetch_assoc();

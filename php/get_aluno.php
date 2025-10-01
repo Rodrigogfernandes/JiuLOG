@@ -30,18 +30,18 @@ while ($row = $horarios_res->fetch_assoc()) {
     $horarios[] = $row;
 }
 
-// Check-ins do aluno (incluindo check-ins livres)
-$checkins_res = $conn->query("SELECT c.id, 
-                                     COALESCE(h.nome_aula, 'Check-in Livre') as nome_aula,
-                                     COALESCE(h.dia_semana, '') as dia_semana, 
-                                     COALESCE(h.hora, '') as hora, 
-                                     c.data_checkin as data, 
-                                     c.status, 
-                                     c.horario_id
-                              FROM checkins c
-                              LEFT JOIN horarios h ON c.horario_id = h.id 
-                              WHERE c.aluno_id=$aluno_id 
-                              ORDER BY c.data_checkin DESC");
+// Check-ins do aluno (incluindo check-ins livres) - retornar data formatada DD/MM/YYYY
+ $checkins_res = $conn->query("SELECT c.id, 
+                      COALESCE(h.nome_aula, 'Check-in Livre') as nome_aula,
+                      COALESCE(h.dia_semana, '') as dia_semana, 
+                      COALESCE(h.hora, '') as hora, 
+                      DATE_FORMAT(c.data_checkin, '%d/%m/%Y') as data, 
+                      c.status, 
+                      c.horario_id
+                  FROM checkins c
+                  LEFT JOIN horarios h ON c.horario_id = h.id 
+                  WHERE c.aluno_id=$aluno_id 
+                  ORDER BY c.data_checkin DESC");
 $checkins = [];
 while ($row = $checkins_res->fetch_assoc()) {
     $checkins[] = $row;
