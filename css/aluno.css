@@ -148,9 +148,8 @@ header {
 }
 
 /* Botão de logout */
-button.logout-btn {
+/* button.logout-btn {
     background-color: #e60000;
-    /* vermelho padrão */
     color: #fff;
     border: none;
     padding: 8px 15px;
@@ -166,6 +165,5 @@ button.logout-btn {
 
 button.logout-btn:hover {
     background-color: #b30000;
-    /* vermelho mais escuro ao passar mouse */
     transform: scale(1.05);
-}
+} */

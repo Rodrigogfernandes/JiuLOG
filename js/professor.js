@@ -1784,8 +1784,8 @@ window.addEventListener('load', () => {
             const id = escapeHtml(c.id || '');
 
             return `
-                <div class="checkin-card card" data-checkin-id="${id}">
-                    <div class="checkin-card-body">
+                <div class="checkin-card" data-checkin-id="${id}">
+                    
                         <h4>${aluno}</h4>
                         <div class="checkin-meta">
                             <div>${aula}</div>
@@ -1793,10 +1793,10 @@ window.addEventListener('load', () => {
                             <div>${data}</div>
                         </div>
                         <div class="checkin-actions">
-                            <button class="btn btn-sm btn-accept" data-checkin-accept="${id}"><i class="fas fa-check"></i> Aceitar</button>
-                            <button class="btn btn-sm btn-reject" data-checkin-reject="${id}"><i class="fas fa-times"></i> Rejeitar</button>
+                            <button class="btn btn-sm btn-aprovar" data-checkin-accept="${id}"><i class="fas fa-check"></i> Aceitar</button>
+                            <button class="btn btn-sm btn-reprovar" data-checkin-reject="${id}"><i class="fas fa-times"></i> Rejeitar</button>
                         </div>
-                    </div>
+                    
                 </div>
             `;
         }).join('');

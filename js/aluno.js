@@ -168,7 +168,7 @@ window.addEventListener('load', () => {
             
 
             // Nome, faixa e graus
-            if (alunoNome) alunoNome.innerHTML = `Olá, ${data.aluno.nome}`;
+            if (alunoNome) alunoNome.innerHTML = ` ${data.aluno.nome}`;
             // Exibir faixa + grau juntos e coloridos
             faixaAluno.innerHTML = `<span class="faixa ${faixaClass}"> Faixa ${data.aluno.faixa} - ${data.aluno.graus}° Grau </span>`;
 

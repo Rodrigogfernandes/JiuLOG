@@ -1,17 +1,106 @@
 /* Responsividade para smartphones pequenos */
 @media (max-width: 376px) {
     .header-title {
-        display: flex;
-        align-items: flex-start;
+        
         flex-direction: column;
+        align-items: center;
+        white-space: normal;
+    }
+
+    .header-logo {
+        flex-wrap: wrap;
+        margin: 10px 0;
+        width: 35%;
+        flex-direction: column;
+    }
+
+    #academia_nome {
+        flex-wrap: wrap;
+        max-width: 100%;
+        text-align: center;
+        font-size: 0.9rem;
+        margin-right: 0;
+        white-space: normal;
     }
 }
 
 @media (max-width: 426px) {
+
+     .header-title {
+        
+        flex-direction: column;
+        align-items: center;
+        white-space: normal;
+       
+    }
+
+    .header-logo {
+        flex-wrap: wrap;
+        margin: 10px 0;
+        width: 35%;
+        flex-direction: column;
+    }
+
+    #academia_nome {
+        flex-wrap: wrap;
+        max-width: 100%;
+        text-align: center;
+        font-size: 0.9rem;
+        margin-right: 0;
+        white-space: normal;
+    }
+
     .aluno-selecionado {
         padding: 0.75rem;
         margin: -0.25rem;
         border-radius: var(--border-radius-small);
+    }
+        .container {
+        padding: 1.5rem 1rem;
+    }
+
+    .container-dashboard {
+        padding: 0.5rem;
+    }
+
+    .logo {
+        font-size: 2rem;
+    }
+
+    .button-container {
+        gap: 0.8rem;
+    }
+
+
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    /* Header mobile mais compacto: empilhar logo + título, botões ocupam largura */
+    .header-left {
+
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    header h2 {
+        font-size: 1.7rem;
+        color: var(--text-primary);
+        white-space: normal;
+    }
+
+    .header-actions {
+        justify-content: right;
+        margin-top: -2rem;
+
+    }
+
+    .header-actions .logout-btn {
+        /* width: 40%; */
+        justify-content: center;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.7rem;
     }
 
     .btn-fechar-card {
@@ -141,55 +230,7 @@
 }
 
 @media (max-width: 426px) {
-    .container {
-        padding: 1.5rem 1rem;
-    }
 
-    .container-dashboard {
-        padding: 0.5rem;
-    }
-
-    .logo {
-        font-size: 2rem;
-    }
-
-    .button-container {
-        gap: 0.8rem;
-    }
-
-    /* .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.7rem;
-    } */
-
-    .grid-2,
-    .grid-3 {
-        grid-template-columns: 1fr;
-    }
-
-    /* Header mobile mais compacto: empilhar logo + título, botões ocupam largura */
-    .header-left {
-
-        align-items: center;
-        ;
-        gap: 0.4rem;
-    }
-
-    header h2 {
-        font-size: 1.2rem;
-        color: var(--text-primary);
-    }
-
-    .header-actions {
-        justify-content: right;
-    }
-
-    .header-actions .logout-btn {
-        /* width: 40%; */
-        justify-content: center;
-        padding: 0.6rem 0.8rem;
-        font-size: 0.7rem;
-    }
 }
 
 /* Responsividade */
