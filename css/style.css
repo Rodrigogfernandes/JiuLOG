@@ -8,12 +8,10 @@
   border-radius: 12px;
   cursor: pointer;
   letter-spacing: 0.5px;
-
   /* Sombras para o efeito 3D realista */
   box-shadow:
     0 6px 0 #265d9c,   /* sombra sólida da base */
     0 6px 15px rgba(0, 0, 0, 0.25); /* sombra difusa suave */
-
   transition: all 0.2s ease-in-out;
   position: relative;
   user-select: none;
@@ -34,4 +32,40 @@
   box-shadow:
     0 2px 0 #265d9c,
     0 2px 8px rgba(0, 0, 0, 0.25);
+}
+tr:active {
+  background-color: rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s;
+}
+
+.custom-confirm-card{
+    display: flex;
+    position: relative;
+    background: #fff;
+    color: #111;
+    border-radius: 8px;
+    max-width: 470px ! important;
+    max-height: 255px;
+    height: 90%;
+    width: 90%;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+    padding: 1rem;
+    z-index: 1;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.custom-confirm-body {
+    white-space: pre-wrap ! important;
+    font-size: 1.5rem ! important;
+    margin-bottom: .75rem ! important;
+}
+
+.custom-confirm-actions {
+    display: flex
+;
+    gap: 8px;
+    flex-direction: column;
+    flex-wrap: wrap;
 }

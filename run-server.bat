@@ -32,7 +32,7 @@ if not defined PHP_CMD (
 )
 
 :: Porta e pasta
-set PORT=8080
+set PORT=3306
 set WEBROOT=JiuLOG
 
 echo Iniciando servidor PHP embutido em http://localhost:%PORT% (servindo %WEBROOT%)

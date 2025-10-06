@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="objects/images/favicon/jiu_jitsu2.png">
-    <script src="js/custom-alert.js" defer></script>
+    <script src="js/custom-alert.js"></script>
     <script src="js/aluno.js" defer></script>
 </head>
 
@@ -39,7 +39,7 @@
         </div>
 
         <div class="header-actions">
-            <a href="php/logout.php" class="btn logout-btn">
+            <a href="php/logout.php" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </div>
@@ -55,7 +55,7 @@
                 <button class="tab-btn" data-tab="conta"><i class="fas fa-user-cog"></i> Conta</button>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
-                <button id="btn-checkin-livre" class="btn btn-3d"><i class="fas fa-check"></i> Marcar presença (Livre)</button>
+                <button id="btn-checkin-livre" class="btn-3d"><i class="fas fa-check"></i> Marcar presença (Livre)</button>
             </div>
         </div>
 
@@ -100,7 +100,30 @@
         <div class="tab-content" id="tab-conta">
             <div class="card">
                 <h3><i class="fas fa-user-cog"></i> Minha Conta</h3>
-                <p>Área para dados da conta do aluno (em breve).</p>
+                <div id="conta-info" style="margin-bottom:20px;text-align:center;">
+                    <h4 id="aluno-nome-conta" style="margin:5px 0;"></h4>
+                    <p style="margin:5px 0;"><strong>Academia:</strong> <span id="academia-nome-conta">Carregando...</span></p>
+                    <p style="margin:5px 0;"><strong>Professor:</strong> <span id="professor-nome">Carregando...</span></p>
+                </div>
+                <form id="form-conta">
+                    <div class="form-group">
+                        <label for="nome">Nome:</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="senha-atual">Senha Atual:</label>
+                        <input type="password" id="senha-atual" name="senha_atual">
+                    </div>
+                    <div class="form-group">
+                        <label for="nova-senha">Nova Senha:</label>
+                        <input type="password" id="nova-senha" name="nova_senha">
+                    </div>
+                    <button type="submit" class="btn">Salvar Alterações</button>
+                </form>
             </div>
         </div>
     </div>
@@ -124,6 +147,28 @@
         }
         document.addEventListener('DOMContentLoaded', createParticles);
     </script>
+    <!-- Estrutura do modal (inicialmente oculto) -->
+<div id="action-modal" class="custom-confirm-modal">
+    <div class="custom-confirm-modal-content">
+        <div id="action-modal-body" class="modal-body">
+            Escolha uma ação para este horário:
+        </div>
+        <div class="modal-buttons">
+            <button id="action-confirmar" class="btn-confirm">
+                <i class="fas fa-check"></i> Confirmar presença
+            </button>
+            <button id="action-editar" class="btn-edit">
+                <i class="fas fa-edit"></i> Editar horário
+            </button>
+            <button id="action-excluir" class="btn-delete">
+                <i class="fas fa-trash"></i> Excluir horário
+            </button>
+            <button id="action-cancel" class="btn-cancel">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

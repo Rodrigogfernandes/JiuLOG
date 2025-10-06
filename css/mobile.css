@@ -1,7 +1,7 @@
 /* Responsividade para smartphones pequenos */
 @media (max-width: 376px) {
     .header-title {
-        
+
         flex-direction: column;
         align-items: center;
         white-space: normal;
@@ -22,16 +22,38 @@
         margin-right: 0;
         white-space: normal;
     }
+
+    .aluno-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1em -1em 1em -1em;
+        background: var(--bg-card);
+        border-radius: var(--border-radius-small);
+        overflow: hidden;
+        box-shadow: var(--shadow-light);
+    }
+
+    .aluno-table th,
+    .aluno-table td {
+        padding: 0.5rem !important;
+        font-size: 0.55rem !important;
+    }
+
+    .btn-3d {
+        margin-top: 1rem;
+    }
+
+
 }
 
 @media (max-width: 426px) {
 
-     .header-title {
-        
+    .header-title {
+
         flex-direction: column;
         align-items: center;
         white-space: normal;
-       
+
     }
 
     .header-logo {
@@ -55,7 +77,8 @@
         margin: -0.25rem;
         border-radius: var(--border-radius-small);
     }
-        .container {
+
+    .container {
         padding: 1.5rem 1rem;
     }
 
@@ -214,23 +237,25 @@
     }
 
     .aluno-table {
+        margin: 1em -1em 1em 0em;
         font-size: 0.75rem;
     }
 
     .aluno-table th,
     .aluno-table td {
-        padding: 0.4rem;
-        font-size: 0.75rem;
+        padding: 0.5rem !important;
+        font-size: 0.6rem !important;
     }
 
-    .aluno-table th {
-        padding: 0.5rem 0.4rem;
-        font-size: 0.75rem;
+    input,
+    select,
+    textarea {
+        margin-bottom: 1em;
     }
-}
 
-@media (max-width: 426px) {
-
+    .btn-3d {
+        margin-top: 1rem;
+    }
 }
 
 /* Responsividade */
@@ -266,45 +291,41 @@
         padding: 0.6rem .8rem;
         font-size: 0.7rem;
     }
-}
 
-.button-row {
-    flex-direction: column;
-}
-
-/* Header: empilhar de forma controlada */
-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-}
-
-/* Agrupamento esquerdo (logo + título) deve ocupar 100% e manter alinhamento horizontal */
-.header-left {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.75rem;
-}
-
-/* Ações do header ficam em linha separada e alinhadas à direita */
-.header-actions {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.25rem;
-}
-
-/* .header-actions .logout-btn {
-        min-width: 120px;
-    } */
+     .btn-3d {
+        margin-top: 1rem;
+    }
 
 
-/* Responsividade para tabela de histórico */
-@media (max-width: 768px) {
+    .button-row {
+        flex-direction: column;
+    }
+
+    /* Header: empilhar de forma controlada */
+    header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    /* Agrupamento esquerdo (logo + título) deve ocupar 100% e manter alinhamento horizontal */
+    .header-left {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.75rem;
+    }
+
+    /* Ações do header ficam em linha separada e alinhadas à direita */
+    .header-actions {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
 
     .historico-table th,
     .historico-table td {
@@ -502,11 +523,6 @@ header {
     .aluno-table th,
     .aluno-table td {
         padding: 0.5rem;
-        font-size: 0.8rem;
-    }
-
-    .aluno-table th {
-        padding: 0.6rem 0.5rem;
         font-size: 0.8rem;
     }
 

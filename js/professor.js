@@ -1665,31 +1665,30 @@ window.addEventListener('load', () => {
         // Tornar linhas clicáveis e exibir dados no card de aluno
         const linhas = tableArea.querySelectorAll('table.aluno-table tbody tr');
         linhas.forEach(row => {
-            row.style.cursor = 'default';
+            row.style.cursor = 'pointer';
 
-            // Abrir via botão 'Abrir'
-            const btnOpen = row.querySelector('.btn-open-row');
-            if (btnOpen) {
-                btnOpen.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    linhas.forEach(r => r.classList.remove('selected'));
-                    row.classList.add('selected');
+            // Clique simples na linha: abrir aluno
+            row.addEventListener('click', (e) => {
+                // Não fazer nada se clicou em um botão
+                if (e.target.closest('button')) return;
 
-                    const id = row.getAttribute('data-id');
-                    const nome = decodeURIComponent(row.getAttribute('data-nome') || '');
-                    const email = decodeURIComponent(row.getAttribute('data-email') || '');
-                    const faixa = decodeURIComponent(row.getAttribute('data-faixa') || '');
-                    const graus = parseInt(row.getAttribute('data-graus') || '0', 10);
-                    const aulas = parseInt(row.getAttribute('data-aulas') || '0', 10);
-                    const membership = row.getAttribute('data-membership') || null;
+                linhas.forEach(r => r.classList.remove('selected'));
+                row.classList.add('selected');
 
-                    if (window.selecionarAluno) {
-                        window.selecionarAluno(id, nome, email, faixa, graus, aulas, membership);
-                    } else if (typeof exibirAlunoSelecionado === 'function') {
-                        exibirAlunoSelecionado({ id: id, nome: nome, email: email, faixa: faixa, graus: graus, aulas_faltando: aulas, membership_id: membership });
-                    }
-                });
-            }
+                const id = row.getAttribute('data-id');
+                const nome = decodeURIComponent(row.getAttribute('data-nome') || '');
+                const email = decodeURIComponent(row.getAttribute('data-email') || '');
+                const faixa = decodeURIComponent(row.getAttribute('data-faixa') || '');
+                const graus = parseInt(row.getAttribute('data-graus') || '0', 10);
+                const aulas = parseInt(row.getAttribute('data-aulas') || '0', 10);
+                const membership = row.getAttribute('data-membership') || null;
+
+                if (window.selecionarAluno) {
+                    window.selecionarAluno(id, nome, email, faixa, graus, aulas, membership);
+                } else if (typeof exibirAlunoSelecionado === 'function') {
+                    exibirAlunoSelecionado({ id: id, nome: nome, email: email, faixa: faixa, graus: graus, aulas_faltando: aulas, membership_id: membership });
+                }
+            });
 
             // Remover vínculo
             const btnRemove = row.querySelector('.btn-remove-membership');

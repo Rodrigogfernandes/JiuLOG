@@ -14,9 +14,13 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `faixa` VARCHAR(50) DEFAULT NULL,
   `graus` TINYINT UNSIGNED DEFAULT 0,
   `aulas_faltando` INT DEFAULT 55,
+  `foto_path` VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_unq` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Adicionar coluna foto_path se não existir
+ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `foto_path` VARCHAR(255) DEFAULT NULL;
 
 -- horários de aulas (registro simples)
 CREATE TABLE IF NOT EXISTS `horarios` (

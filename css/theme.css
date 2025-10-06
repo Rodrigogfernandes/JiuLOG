@@ -263,6 +263,7 @@ input::placeholder {
     text-decoration: none;
     display: inline-block;
     text-align: center;
+    margin-top: 1rem;
 }
 
 .btn::before {
@@ -482,8 +483,6 @@ header h2 {
     margin-right: 20px;
 }
 
-
-
 /* Agrupamento esquerdo do header (logo + título) */
 .header-left {
     display: flex;
@@ -512,16 +511,14 @@ header h2 {
     box-shadow: 0 10px 30px rgba(30, 144, 255, 0.12);
 }
 
-/* Override seletivo para garantir que o header use o estilo principal
-   mesmo que exista um arquivo específico (ex: css/professor.css) aplicando
-   regras com maior especificidade e mínimo uso de !important. */
+/* Agrupamento direito do header (botões) */
 html body header {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.02)), var(--bg-secondary) !important;
     color: var(--text-primary) !important;
     border-radius: var(--border-radius) !important;
 }
 
-/* .logout-btn {
+.logout-btn {
     background: linear-gradient(135deg, #dc3545, #c82333);
     padding: 0.6rem .8rem;
     font-size: 0.7rem;
@@ -542,7 +539,7 @@ html body header {
     background: linear-gradient(135deg, #c82333, #a71e2a);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
-} */
+}
 
 /* Novo Aluno button */
 .novo-aluno-btn {
@@ -933,7 +930,7 @@ html body header {
 }
 
 .modal-body {
-    padding: 1.5rem;
+    padding: 0 1.5rem 2rem 1.5rem;
 }
 
 .modal-footer {
@@ -945,6 +942,141 @@ html body header {
     background: #f8f9fa;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
+
+/* //------------------------------------------------------------- */
+
+/* Estilos do modal de fundo */
+.custom-confirm-modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: none; /* Inicialmente oculto */
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+
+/* === Conteúdo do modal === */
+.custom-confirm-modal-content {
+    position: relative;
+    background: #ffffff;
+    color: #2d3748;
+    border-radius: 16px;
+    max-width: 540px;
+    width: 92%;
+    box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(0, 0, 0, 0.06);
+    padding: 1.75rem;
+    z-index: 1;
+    transform: translateY(16px);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-confirm-modal.active .custom-confirm-modal-content {
+    transform: translateY(0);
+}
+
+/* === Corpo do modal === */
+.modal-body {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    color: #334155;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    text-align: center;
+}
+
+/* === Botões === */
+.modal-buttons {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.modal-buttons button {
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 140px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Botão principal: Confirmar */
+.btn-confirm {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+}
+
+.btn-confirm:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Botão secundário: Editar */
+.btn-edit {
+    background: #f8fafc;
+    color: #3b82f6;
+    border: 1px solid #dbeafe;
+}
+
+.btn-edit:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15);
+}
+
+/* Botão de risco: Excluir */
+.btn-delete {
+    background: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+}
+
+.btn-delete:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.18);
+}
+
+/* Botão neutro: Cancelar */
+.btn-cancel {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-cancel:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(100, 116, 139, 0.12);
+}
+
+/* Estado ativo (clique) */
+.modal-buttons button:active {
+    transform: translateY(0);
+    scale: 0.98;
+}
+/*--------------  */
 
 /* Animação do modal */
 @keyframes modalSlideIn {
@@ -1039,7 +1171,7 @@ html body header {
     gap: 7%;
     flex-wrap: wrap;
     /* --------------------------------- */
-    
+
     background: var(--bg-card);
     border-radius: var(--border-radius);
     padding: 1rem;
@@ -1052,13 +1184,14 @@ html body header {
         margin-bottom: 0.2rem;
     }
 }
+
 .checkin-card {
     display: flex;
     flex-direction: row;
     gap: 7%;
     flex-wrap: wrap;
     /* --------------------------------- */
-    
+
     background: var(--bg-card);
     border-radius: var(--border-radius);
     padding: 1rem;
@@ -1115,12 +1248,7 @@ html body header {
     text-align: left;
     border-bottom: 1px solid #e1e5e9;
     font-size: 0.9rem;
-}
-
-.aluno-table th {
     font-weight: 600;
-    font-size: 0.9rem;
-    padding: 1rem 0.75rem;
 }
 
 .aluno-table tbody tr {

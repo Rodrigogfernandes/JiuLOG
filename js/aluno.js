@@ -1,302 +1,385 @@
-window.addEventListener('load', () => {
-    // Garantir que `alert()` dentro deste escopo use o modal customizado quando disponível
+// ==================== UTILITÁRIOS ====================
+
+/**
+ * Formata datas em DD/MM/YYYY
+ * @param {Date|string} dateInput - Data a ser formatada
+ * @returns {string} Data formatada em DD/MM/YYYY
+ */
+function formatDateBr(dateInput) {
+    if (!dateInput) return '';
+
+    if (dateInput instanceof Date) {
+        const dd = String(dateInput.getDate()).padStart(2, '0');
+        const mm = String(dateInput.getMonth() + 1).padStart(2, '0');
+        const yyyy = dateInput.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    }
+
+    // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+        return dateInput.split('-').reverse().join('/');
+    }
+
+    // ISO datetime
+    if (/^\d{4}-\d{2}-\d{2}T/.test(dateInput)) {
+        return dateInput.slice(0, 10).split('-').reverse().join('/');
+    }
+
+    // Já está em DD/MM/YYYY
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateInput)) {
+        return dateInput;
+    }
+
+    // Fallback: tentar parse
+    const parsed = new Date(dateInput);
+    if (!isNaN(parsed)) return formatDateBr(parsed);
+
+    return String(dateInput);
+}
+
+/**
+ * Obtém data atual no formato YYYY-MM-DD
+ * @returns {string}
+ */
+function getTodayISO() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+// ==================== GESTÃO DE ESTADO ====================
+
+const AppState = {
+    isActionModalOpen: false,
+    processingCheckin: false,
+
+    setModalOpen(value) {
+        this.isActionModalOpen = value;
+        document.body.style.overflow = value ? 'hidden' : 'auto';
+    },
+
+    setProcessingCheckin(value) {
+        this.processingCheckin = value;
+    }
+};
+
+// ==================== API REQUESTS ====================
+
+/**
+ * Realiza checkin (livre ou por horário)
+ * @param {Object} params - Parâmetros do checkin
+ * @returns {Promise<Object>}
+ */
+async function requestCheckin({ horarioId = null, data, force = false }) {
+    const endpoint = horarioId ? 'php/checkin.php' : 'php/checkin_livre.php';
+    const body = new URLSearchParams();
+
+    if (horarioId) body.append('horario_id', horarioId);
+    body.append('data', data);
+    if (force) body.append('force', '1');
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: body.toString()
+    });
+
+    const text = await response.text();
+
     try {
-        const _alert = (window.showAlert || window.alert).bind(window);
-        // eslint-disable-next-line no-shadow
-        const alert = _alert;
-    } catch (e) { }
-        console.debug('[aluno.js] load event');
+        return JSON.parse(text);
+    } catch (e) {
+        // Resposta não-JSON (legacy): considerar sucesso
+        return { success: true, legacy: true };
+    }
+}
 
-    // utilitário para formatar datas em DD/MM/YYYY
-    function formatDateBr(dateInput) {
-        if (!dateInput) return '';
-        if (dateInput instanceof Date) {
-            const d = dateInput;
-            const dd = String(d.getDate()).padStart(2, '0');
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const yyyy = d.getFullYear();
-            return `${dd}/${mm}/${yyyy}`;
+/**
+ * Carrega dados do aluno
+ * @returns {Promise<Object>}
+ */
+async function fetchAlunoData() {
+    const response = await fetch('php/get_aluno.php');
+    return response.json();
+}
+
+/**
+ * Carrega lista de academias
+ * @returns {Promise<Object>}
+ */
+async function fetchAcademias() {
+    const response = await fetch('php/get_academias.php');
+    return response.json();
+}
+
+
+/**
+ * Solicita vínculo com academia
+ * @param {number} academiaId
+ * @returns {Promise<Object>}
+ */
+async function requestVinculo(academiaId) {
+    const response = await fetch('php/solicitar_vinculo.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `academia_id=${encodeURIComponent(academiaId)}`
+    });
+    return response.json();
+}
+
+/**
+ * Confirma ou rejeita vínculo
+ * @param {string} acao - 'aluno_aceitar' ou 'aluno_rejeitar'
+ * @param {number} membershipId
+ * @returns {Promise<Object>}
+ */
+async function confirmVinculo(acao, membershipId) {
+    const response = await fetch('php/confirmar_vinculo.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `acao=${encodeURIComponent(acao)}&membership_id=${encodeURIComponent(membershipId)}`
+    });
+    return response.json();
+}
+
+// ==================== CHECKIN HANDLERS ====================
+
+/**
+ * Handler para checkin livre
+ * @param {HTMLElement} button
+ * @param {boolean} force - Se true, força checkin mesmo que já exista
+ */
+async function handleCheckinLivre(button, force = false) {
+    // Prevenir múltiplos cliques
+    if (AppState.processingCheckin || button.disabled) return;
+
+    const data = getTodayISO();
+    const dataBr = formatDateBr(data);
+
+    const message = force
+        ? `Você já fez um check-in livre em ${dataBr} hoje. Deseja marcar outro?`
+        : `Marcar presença livre para hoje (${dataBr})?`;
+
+    if (!await window.confirmModal(message)) return;
+
+    // Marcar como processando
+    AppState.setProcessingCheckin(true);
+    button.disabled = true;
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+    try {
+        const result = await requestCheckin({ data, force });
+
+        if (result.success || result.legacy) {
+            const dateBr = result.data || dataBr;
+            await window.showAlert(`Presença registrada em ${dateBr}.`);
+            location.reload();
+        } else if (result.error) {
+            await window.showAlert(result.error || 'Erro ao marcar presença.');
+        } else {
+            location.reload();
         }
-        // se já estiver no formato YYYY-MM-DD
-        if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
-            return dateInput.split('-').reverse().join('/');
-        }
-        // se estiver como ISO datetime
-        if (/^\d{4}-\d{2}-\d{2}T/.test(dateInput)) {
-            return dateInput.slice(0,10).split('-').reverse().join('/');
-        }
-        // se estiver em DD/MM/YYYY já
-        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateInput)) return dateInput;
-        // fallback: tentar parse
-        const parsed = new Date(dateInput);
-        if (!isNaN(parsed)) return formatDateBr(parsed);
-        return String(dateInput);
+    } catch (error) {
+        console.error('Erro ao enviar checkin livre:', error);
+        await window.showAlert('Erro ao marcar presença. Tente novamente.');
+    } finally {
+        // Restaurar estado apenas se não recarregou a página
+        AppState.setProcessingCheckin(false);
+        button.disabled = false;
+        button.innerHTML = originalHtml;
+    }
+}
+
+/**
+ * Handler para checkin por horário
+ * @param {string} horarioId
+ */
+async function handleCheckinHorario(horarioId) {
+    const data = getTodayISO();
+    const dataBr = formatDateBr(data);
+
+    if (!await window.confirmModal(`Marcar presença para o horário selecionado em ${dataBr}?`)) {
+        return;
     }
 
-    // Abas na página do aluno: comportamento simples
-    document.addEventListener('click', function (e) {
-        const btn = e.target.closest && e.target.closest('.tab-btn');
-        if (!btn) return;
-        const tabName = btn.getAttribute('data-tab');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        const target = document.getElementById('tab-' + tabName);
-        if (target) target.classList.add('active');
+    try {
+        const result = await requestCheckin({ horarioId, data });
+
+        if (result.success || result.legacy) {
+            const dateBr = result.data || formatDateBr(data);
+            await window.showAlert(`Presença registrada em ${dateBr}.`);
+            location.reload();
+        } else if (result.error) {
+            await window.showAlert(result.error || 'Erro ao marcar presença.');
+        } else {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Erro ao marcar presença:', error);
+        await window.showAlert('Erro ao marcar presença. Tente novamente.');
+    }
+}
+
+/**
+ * Configura botão de checkin livre baseado no histórico
+ * @param {HTMLElement} button
+ * @param {Array} checkins - Lista de checkins
+ */
+function setupCheckinLivreButton(button, checkins) {
+    if (!button) return;
+
+    const todayIso = getTodayISO();
+    const todayBr = formatDateBr(todayIso);
+
+    // Verificar se já houve checkin livre hoje
+    const hasFreeToday = (checkins || []).some(c => {
+        const isFree = (
+            c.horario_id === null ||
+            c.horario_id === undefined ||
+            c.horario_id === '' ||
+            (c.nome_aula && c.nome_aula.toLowerCase().includes('livre'))
+        );
+        if (!isFree) return false;
+
+        const cd = String(c.data || '');
+        return cd === todayIso || cd === todayBr;
     });
 
-    // Handler para checkin livre (data atual)
-    const btnCheckinLivre = document.getElementById('btn-checkin-livre');
-    if (btnCheckinLivre) {
-        btnCheckinLivre.addEventListener('click', async () => {
-            const data = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (envio ao servidor)
-            const dataBr = formatDateBr(data);
-            if (!await window.confirmModal('Marcar presença livre para hoje (' + dataBr + ')?')) return;
-            btnCheckinLivre.disabled = true;
-            btnCheckinLivre.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-            fetch('php/checkin_livre.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                body: 'data=' + encodeURIComponent(data)
-            }).then(async r => {
-                const text = await r.text();
-                try {
-                    const json = JSON.parse(text);
-                    if (json && json.success) {
-                        const dateBr = json.data || formatDateBr(new Date().toISOString().slice(0,10));
-                        await window.showAlert('Presença registrada em ' + dateBr + '.');
-                        location.reload();
-                        return;
-                    }
-                    if (json && json.error) {
-                        window.showAlert(json.error || 'Erro ao marcar presença.');
-                        btnCheckinLivre.disabled = false;
-                        btnCheckinLivre.innerHTML = '<i class="fas fa-check"></i> Marcar presença (Livre)';
-                        return;
-                    }
-                } catch (e) {
-                    // fallback legacy
-                    location.reload();
-                    return;
-                }
-                location.reload();
-            }).catch(err => {
-                console.error('Erro ao enviar checkin livre:', err);
-                window.showAlert('Erro ao marcar presença. Veja console.');
-                btnCheckinLivre.disabled = false;
-                btnCheckinLivre.innerHTML = '<i class="fas fa-check"></i> Marcar presença (Livre)';
-            });
-        });
-    }
-    // Fallback por delegação: captura cliques mesmo que o botão seja recriado dinamicamente
-    document.addEventListener('click', async (e) => {
-        try {
-            const btn = e.target && e.target.closest ? e.target.closest('#btn-checkin-livre') : null;
-            if (!btn) return;
+    if (hasFreeToday) {
+        button.setAttribute('title', 'Já houve check-in livre hoje – clique para confirmar outro');
+        button.innerHTML = '<i class="fas fa-check"></i> Já fez check-in hoje (clique para confirmar outro)';
+        button.addEventListener('click', (e) => {
             e.preventDefault();
-
-            // Proteção contra múltiplos cliques
-            if (btn.disabled) return;
-
-            const data = new Date().toISOString().slice(0,10);
-            const dataBr = formatDateBr(data);
-            const confirmed = await window.confirmModal('Marcar presença livre para hoje (' + dataBr + ')?');
-            if (!confirmed) return;
-
-            btn.disabled = true;
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-
-            fetch('php/checkin_livre.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type':'application/x-www-form-urlencoded',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: 'data=' + encodeURIComponent(data)
-            }).then(async r => {
-                // tentar interpretar JSON de sucesso/erro
-                const text = await r.text();
-                try {
-                    const json = JSON.parse(text);
-                    if (json && json.success) {
-                        const dateBr = json.data || formatDateBr(new Date().toISOString().slice(0,10));
-                        await window.showAlert('Presença registrada em ' + dateBr + '.');
-                        location.reload();
-                        return;
-                    }
-                    if (json && json.error) {
-                        window.showAlert(json.error || 'Erro ao marcar presença.');
-                        btn.disabled = false;
-                        btn.innerHTML = originalHtml;
-                        return;
-                                console.debug('[aluno.js] delegated click detected for #btn-checkin-livre');
-                    }
-                } catch (e) {
-                    // não JSON: comportamento legacy — recarregar
-                    location.reload();
-                    return;
-                }
-                // se caiu aqui, recarregar como fallback
-                location.reload();
-            }).catch(err => {
-                console.error('Erro ao enviar checkin livre (delegation):', err);
-                window.showAlert('Erro ao marcar presença. Veja console.');
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            });
-        } catch (err) {
-            console.error('Erro no handler delegado de btn-checkin-livre:', err);
-        }
-    });
-    fetch('php/get_aluno.php')
-        .then(response => response.json())
-        .then(data => {
-            const alunoNome = document.getElementById('aluno_nome_text');
-            const aulasFaltando = document.getElementById('aulas_faltando');
-            const horariosTreinoContainer = document.getElementById('horarios_treino_container');
-            const historicoPresencaContainer = document.getElementById('historico_presenca_container');
-            const academiaInfo = document.getElementById('academia_info_aluno');
-            const academiaContainer = document.getElementById('academia_container');
-            const selTroca = document.getElementById('trocar_academia_select');
-            const btnTroca = document.getElementById('btn_trocar_academia');
-            const faixaAluno = document.getElementById('faixa_aluno');
-            const grauAluno = document.getElementById('grau_aluno');
-            const faixaClass = `faixa-${data.aluno.faixa.toLowerCase()}`;
-
-
-            
-
-            // Nome, faixa e graus
-            if (alunoNome) alunoNome.innerHTML = ` ${data.aluno.nome}`;
-            // Exibir faixa + grau juntos e coloridos
-            faixaAluno.innerHTML = `<span class="faixa ${faixaClass}"> Faixa ${data.aluno.faixa} - ${data.aluno.graus}° Grau </span>`;
-
-            // Aulas faltando
-            aulasFaltando.textContent = `Faltam ${data.aluno.aulas_faltando} aulas para a próxima graduação`;
-
-            // Criar tabela de horários de treino
-            criarTabelaHorariosTreino(data.horarios, horariosTreinoContainer);
-
-            // Criar tabela de histórico de presença
-            criarTabelaHistoricoPresenca(data.checkins, historicoPresencaContainer);
-
-            // Academia no header (preencher elementos antigos e novos para compatibilidade)
-            const m = data.membership;
-            if (academiaInfo) {
-                if (m && m.academia_nome) {
-                    const logo = m.logo_path ? `<img src="${m.logo_path}" alt="logo" style="height:28px;border-radius:4px">` : `<i class="fas fa-building" style="opacity:.7"></i>`;
-                    academiaInfo.innerHTML = `${logo} <span>${m.academia_nome}</span>`;
-                } else {
-                    academiaInfo.innerHTML = '';
-                }
-            }
-
-            // Preencher novo header principal se existir
-            try {
-                const academiaInfoMain = document.getElementById('academia_info');
-                const academiaLogoMain = document.getElementById('academia_logo');
-                const academiaNomeMain = document.getElementById('academia_nome');
-                if (academiaInfoMain && academiaNomeMain) {
-                    if (m && m.academia_nome) {
-                        if (academiaLogoMain) {
-                            if (m.logo_path) academiaLogoMain.innerHTML = `<img src="${m.logo_path}" alt="Logo">`;
-                            else academiaLogoMain.innerHTML = `<i class="fas fa-building" style="opacity:.7"></i>`;
-                        }
-                        academiaNomeMain.textContent = m.academia_nome || '';
-                    } else {
-                        if (academiaLogoMain) academiaLogoMain.innerHTML = '';
-                        academiaNomeMain.textContent = '';
-                    }
-                }
-            } catch (e) { /* ignore */ }
-
-            // Minha academia
-            renderAcademia(data.membership, academiaContainer);
-
-            // Se já houve check-in livre hoje, avisar via modal e perguntar se quer marcar outro
-            try {
-                const btnCL = document.getElementById('btn-checkin-livre');
-                if (btnCL) {
-                    const todayIso = new Date().toISOString().slice(0,10); // YYYY-MM-DD
-                    const todayBr = formatDateBr(todayIso); // DD/MM/YYYY
-                    const hasFreeToday = (data.checkins || []).some(c => {
-                        const isFree = (c.horario_id === null || c.horario_id === undefined || c.horario_id === '' || (c.nome_aula && c.nome_aula.toLowerCase().includes('livre')));
-                        if (!isFree) return false;
-                        const cd = String(c.data || '');
-                        return cd === todayIso || cd === todayBr;
-                    });
-                    if (hasFreeToday) {
-                        // sobrescrever comportamento do clique para mostrar confirmação informativa
-                        btnCL.addEventListener('click', async function infoIfAlready(e){
-                            e.preventDefault();
-                            const dataStr = todayBr; // dd/mm/YYYY
-                            const msg = `Você já fez um check-in livre em ${dataStr} hoje. Deseja marcar outro?`;
-                            const confirmed = await window.confirmModal(msg);
-                            if (!confirmed) return;
-                            // se confirmar, enviar com force=1
-                            btnCL.disabled = true;
-                            const originalHtml = btnCL.innerHTML;
-                            btnCL.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-                            fetch('php/checkin_livre.php', {
-                                method: 'POST',
-                                headers: {'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
-                                body: 'data=' + encodeURIComponent(todayIso) + '&force=1'
-                            }).then(async r => {
-                                const text = await r.text();
-                                try { const json = JSON.parse(text); if (json && json.success) { location.reload(); return; } if (json && json.error) { window.showAlert(json.error || 'Erro'); btnCL.disabled=false; btnCL.innerHTML=originalHtml; return; } } catch(e){ location.reload(); }
-                            }).catch(err => { console.error('Erro ao forçar checkin livre:', err); window.showAlert('Erro ao marcar presença. Veja console.'); btnCL.disabled=false; btnCL.innerHTML=originalHtml; });
-                        }, { once: true });
-                        // atualizar texto informativo (não desabilitar), mas deixar sugestão
-                        btnCL.setAttribute('title', 'Já houve check-in livre hoje — clique para confirmar outro');
-                        btnCL.innerHTML = '<i class="fas fa-check"></i> Já fez check-in hoje (clique para confirmar outro)';
-                        console.debug('[aluno.js] botão checkin livre: já existe hoje, clique agora mostra modal para forçar outro');
-                    }
-                }
-            } catch (e) { console.error('Erro ao avaliar checkins para info botão livre', e); }
-
-            // Carregar lista para troca
-            fetch('php/get_academias.php')
-                .then(r => r.json())
-                .then(d => {
-                    if (selTroca) {
-                        selTroca.innerHTML = '<option value="">Selecionar nova academia...</option>';
-                        (d.academias || []).forEach(a => {
-                            const opt = document.createElement('option');
-                            opt.value = a.id;
-                            opt.textContent = a.nome;
-                            selTroca.appendChild(opt);
-                        });
-                    }
-                });
-
-            if (btnTroca) {
-                btnTroca.addEventListener('click', () => {
-                    const id = parseInt(selTroca.value || '0', 10);
-                    if (!id) return;
-                    fetch('php/solicitar_vinculo.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: 'academia_id=' + encodeURIComponent(id)
-                    })
-                        .then(r => r.json())
-                        .then(() => {
-                            academiaContainer.innerHTML = '<div class="table-loading">Solicitação enviada. Aguarde aprovação do professor.</div>';
-                        });
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao carregar dados do aluno:', error);
-            document.getElementById('horarios_treino_container').innerHTML =
-                '<div class="table-loading">Erro ao carregar dados</div>';
-            document.getElementById('historico_presenca_container').innerHTML =
-                '<div class="table-loading">Erro ao carregar dados</div>';
-            });
+            handleCheckinLivre(button, true);
         });
-        
+    } else {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleCheckinLivre(button, false);
+        });
+    }
+}
 
+// ==================== RENDERIZAÇÃO ====================
 
+/**
+ * Renderiza informações da academia no header
+ * @param {Object} membership
+ */
+function renderAcademiaHeader(membership) {
+    const academiaInfo = document.getElementById('academia_info_aluno');
+    const academiaInfoMain = document.getElementById('academia_info');
+    const academiaLogoMain = document.getElementById('academia_logo');
+    const academiaNomeMain = document.getElementById('academia_nome');
+
+    if (!membership || !membership.academia_nome) {
+        if (academiaInfo) academiaInfo.innerHTML = '';
+        if (academiaInfoMain) {
+            if (academiaLogoMain) academiaLogoMain.innerHTML = '';
+            if (academiaNomeMain) academiaNomeMain.textContent = '';
+        }
+        return;
+    }
+
+    const logo = membership.logo_path
+        ? `<img src="${membership.logo_path}" alt="logo" style="height:28px;border-radius:4px">`
+        : `<i class="fas fa-building" style="opacity:.7"></i>`;
+
+    // Header antigo (compatibilidade)
+    if (academiaInfo) {
+        academiaInfo.innerHTML = `${logo} <span>${membership.academia_nome}</span>`;
+    }
+
+    // Header principal
+    if (academiaInfoMain && academiaNomeMain) {
+        if (academiaLogoMain) {
+            academiaLogoMain.innerHTML = membership.logo_path
+                ? `<img src="${membership.logo_path}" alt="Logo">`
+                : `<i class="fas fa-building" style="opacity:.7"></i>`;
+        }
+        academiaNomeMain.textContent = membership.academia_nome || '';
+    }
+}
+
+/**
+ * Renderiza seção "Minha Academia"
+ * @param {Object} membership
+ * @param {HTMLElement} container
+ */
+function renderAcademia(membership, container) {
+    if (!container) return;
+
+    if (!membership) {
+        container.innerHTML = '<div class="table-loading"><i class="fas fa-info-circle"></i> Nenhuma academia vinculada.</div>';
+        return;
+    }
+
+    const statusMap = {
+        approved: { label: 'Aprovado', icon: 'fa-check-circle' },
+        pending_professor: { label: 'Pendente professor', icon: 'fa-hourglass-half' },
+        pending_aluno: { label: 'Aguardando sua confirmação', icon: 'fa-handshake' },
+        rejected: { label: 'Rejeitado', icon: 'fa-times-circle' },
+        cancelled: { label: 'Cancelado', icon: 'fa-ban' }
+    };
+
+    const info = statusMap[membership.status] || { label: membership.status, icon: 'fa-question-circle' };
+    const logo = membership.logo_path
+        ? `<img src="${membership.logo_path}" alt="logo" style="height:40px;vertical-align:middle;margin-right:8px">`
+        : '';
+
+    const actionButtons = membership.status === 'pending_aluno'
+        ? `<button class="btn btn-small" id="btnAceitarAcad"><i class="fas fa-check"></i> Confirmar</button>
+           <button class="btn btn-small btn-outline" id="btnRejeitarAcad"><i class="fas fa-times"></i> Rejeitar</button>`
+        : '';
+
+    container.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${logo}
+            <strong>${membership.academia_nome}</strong>
+            <span class="status-badge status-${membership.status}"><i class="fas ${info.icon}"></i> ${info.label}</span>
+            ${actionButtons}
+        </div>
+    `;
+
+    // Configurar handlers de confirmação
+    if (membership.status === 'pending_aluno') {
+        const btnAceitar = document.getElementById('btnAceitarAcad');
+        const btnRejeitar = document.getElementById('btnRejeitarAcad');
+
+        if (btnAceitar) {
+            btnAceitar.addEventListener('click', async () => {
+                try {
+                    await confirmVinculo('aluno_aceitar', membership.membership_id);
+                    container.innerHTML = '<div class="table-loading"><i class="fas fa-check"></i> Atualizado. Recarregue a página.</div>';
+                } catch (error) {
+                    console.error('Erro ao aceitar vínculo:', error);
+                    await window.showAlert('Erro ao confirmar vínculo.');
+                }
+            });
+        }
+
+        if (btnRejeitar) {
+            btnRejeitar.addEventListener('click', async () => {
+                if (!await window.confirmModal('Tem certeza que deseja rejeitar este vínculo?')) return;
+                try {
+                    await confirmVinculo('aluno_rejeitar', membership.membership_id);
+                    container.innerHTML = '<div class="table-loading"><i class="fas fa-check"></i> Atualizado. Recarregue a página.</div>';
+                } catch (error) {
+                    console.error('Erro ao rejeitar vínculo:', error);
+                    await window.showAlert('Erro ao rejeitar vínculo.');
+                }
+            });
+        }
+    }
+}
+
+/**
+ * Cria tabela de horários de treino
+ * @param {Array} horarios
+ * @param {HTMLElement} container
+ */
 function criarTabelaHorariosTreino(horarios, container) {
     if (!horarios || horarios.length === 0) {
         container.innerHTML = `
@@ -308,7 +391,7 @@ function criarTabelaHorariosTreino(horarios, container) {
         return;
     }
 
-    // Ordenar horários por dia da semana e hora
+    // Ordenar horários
     const ordemDias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
     const horariosOrdenados = horarios.sort((a, b) => {
         const diaA = ordemDias.indexOf(a.dia_semana);
@@ -324,18 +407,14 @@ function criarTabelaHorariosTreino(horarios, container) {
                     <th><i class="fas fa-calendar-day"></i> Dia da Semana</th>
                     <th><i class="fas fa-clock"></i> Horário</th>
                     <th><i class="fas fa-dumbbell"></i> Tipo de Treino</th>
-                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 ${horariosOrdenados.map(h => `
-                    <tr data-horario-id="${h.id}">
+                    <tr data-horario-id="${h.id}" style="cursor:pointer;" title="Clique para ações">
                         <td><strong>${h.dia_semana}</strong></td>
                         <td>${h.hora}</td>
                         <td>${h.nome_aula}</td>
-                        <td style="white-space:nowrap;">
-                            <button class="btn btn-sm btn-primary btn-marcar-presenca" data-horario-id="${h.id}"><i class="fas fa-check"></i> Marcar presença</button>
-                        </td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -344,54 +423,21 @@ function criarTabelaHorariosTreino(horarios, container) {
 
     container.innerHTML = tabelaHTML;
 
-    // Adicionar listeners para botões de marcar presença por horário
-    container.querySelectorAll('.btn-marcar-presenca').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const horarioId = btn.getAttribute('data-horario-id');
-            const data = new Date().toISOString().slice(0, 10);
-            const dataBr = formatDateBr(data);
-            if (!await window.confirmModal('Marcar presença para o horário selecionado em ' + dataBr + '?')) return;
-            btn.disabled = true;
-            const original = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-
-            fetch('php/checkin.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                body: 'horario_id=' + encodeURIComponent(horarioId) + '&data=' + encodeURIComponent(data)
-            }).then(async r => {
-                const text = await r.text();
-                try {
-                    const json = JSON.parse(text);
-                    if (json && json.success) {
-                        const dateBr = json.data || formatDateBr(new Date().toISOString().slice(0,10));
-                        await window.showAlert('Presença registrada em ' + dateBr + '.');
-                        location.reload();
-                        return;
-                    }
-                    if (json && json.error) {
-                        window.showAlert(json.error || 'Erro ao marcar presença.');
-                        btn.disabled = false;
-                        btn.innerHTML = original;
-                        return;
-                    }
-                } catch (e) {
-                    // fallback legacy
-                    location.reload();
-                    return;
-                }
-                location.reload();
-            }).catch(err => {
-                console.error('Erro ao marcar presença:', err);
-                window.showAlert('Erro ao marcar presença. Veja console.');
-                btn.disabled = false;
-                btn.innerHTML = original;
-            });
+    // Adicionar event listeners
+    container.querySelectorAll('tbody tr').forEach(tr => {
+        tr.addEventListener('click', () => {
+            if (AppState.isActionModalOpen) return;
+            const horarioId = tr.getAttribute('data-horario-id');
+            showActionModal(horarioId);
         });
     });
 }
 
+/**
+ * Cria tabela de histórico de presença
+ * @param {Array} checkins
+ * @param {HTMLElement} container
+ */
 function criarTabelaHistoricoPresenca(checkins, container) {
     if (!checkins || checkins.length === 0) {
         container.innerHTML = `
@@ -441,59 +487,350 @@ function criarTabelaHistoricoPresenca(checkins, container) {
     container.innerHTML = tabelaHTML;
 }
 
+/**
+ * Retorna ícone apropriado para cada status
+ * @param {string} status
+ * @returns {string}
+ */
 function getStatusIcon(status) {
-    switch (status) {
-        case 'aprovado':
-            return 'fa-check-circle';
-        case 'reprovado':
-            return 'fa-times-circle';
-        case 'pendente':
-            return 'fa-clock';
-        case 'livre':
-            return 'fa-sign-in-alt';
-        default:
-            return 'fa-question-circle';
-    }
+    const icons = {
+        aprovado: 'fa-check-circle',
+        reprovado: 'fa-times-circle',
+        pendente: 'fa-clock',
+        livre: 'fa-sign-in-alt'
+    };
+    return icons[status] || 'fa-question-circle';
 }
 
-function renderAcademia(membership, container) {
-    if (!container) return;
-    if (!membership) {
-        container.innerHTML = '<div class="table-loading"><i class="fas fa-info-circle"></i> Nenhuma academia vinculada.</div>';
-        return;
+// ==================== MODAL DE AÇÕES ====================
+
+/**
+ * Exibe modal de ações para um horário
+ * @param {string} horarioId
+ */
+function showActionModal(horarioId) {
+    // Prevenir abertura se já houver modal aberto
+    if (AppState.isActionModalOpen) return;
+
+    const modalId = 'action-modal';
+    let modal = document.getElementById(modalId);
+
+    if (!modal) {
+        modal = createActionModal();
     }
-    const statusMap = {
-        approved: { label: 'Aprovado', icon: 'fa-check-circle' },
-        pending_professor: { label: 'Pendente professor', icon: 'fa-hourglass-half' },
-        pending_aluno: { label: 'Aguardando sua confirmação', icon: 'fa-handshake' },
-        rejected: { label: 'Rejeitado', icon: 'fa-times-circle' },
-        cancelled: { label: 'Cancelado', icon: 'fa-ban' }
+
+    const btnConfirmar = document.getElementById('action-confirmar');
+    const btnEditar = document.getElementById('action-editar');
+    const btnExcluir = document.getElementById('action-excluir');
+    const btnCancel = document.getElementById('action-cancel');
+
+    AppState.setModalOpen(true);
+    modal.style.display = 'flex';
+
+    // Remover event listeners antigos (se existirem)
+    const newBtnConfirmar = btnConfirmar.cloneNode(true);
+    const newBtnEditar = btnEditar.cloneNode(true);
+    const newBtnExcluir = btnExcluir.cloneNode(true);
+    const newBtnCancel = btnCancel.cloneNode(true);
+
+    btnConfirmar.replaceWith(newBtnConfirmar);
+    btnEditar.replaceWith(newBtnEditar);
+    btnExcluir.replaceWith(newBtnExcluir);
+    btnCancel.replaceWith(newBtnCancel);
+
+    // Função para fechar modal
+    const hideModal = () => {
+        modal.style.display = 'none';
+        AppState.setModalOpen(false);
     };
-    const info = statusMap[membership.status] || { label: membership.status, icon: 'fa-question-circle' };
-    const logo = membership.logo_path ? `<img src="${membership.logo_path}" alt="logo" style="height:40px;vertical-align:middle;margin-right:8px">` : '';
-    container.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            ${logo}
-            <strong>${membership.academia_nome}</strong>
-            <span class="status-badge status-${membership.status}"><i class="fas ${info.icon}"></i> ${info.label}</span>
-            ${membership.status === 'pending_aluno' ? `<button class="btn btn-small" id="btnAceitarAcad"><i class="fas fa-check"></i> Confirmar</button>
-            <button class="btn btn-small btn-outline" id="btnRejeitarAcad"><i class="fas fa-times"></i> Rejeitar</button>` : ''}
+
+    // Configurar novos event listeners
+    newBtnCancel.addEventListener('click', hideModal);
+
+    newBtnConfirmar.addEventListener('click', async () => {
+        hideModal();
+        await handleCheckinHorario(horarioId);
+    });
+
+    newBtnEditar.addEventListener('click', async () => {
+        hideModal();
+        await window.showAlert('Edição de horário só pode ser feita pelo professor.');
+    });
+
+    newBtnExcluir.addEventListener('click', async () => {
+        hideModal();
+        if (!await window.confirmModal('Tem certeza que deseja excluir este horário?')) return;
+        await window.showAlert('Exclusão de horário só pode ser feita pelo professor.');
+    });
+
+    // Fechar ao clicar fora
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) hideModal();
+    });
+}
+
+/**
+ * Cria elemento HTML do modal de ações
+ * @returns {HTMLElement}
+ */
+function createActionModal() {
+    const modal = document.createElement('div');
+    modal.id = 'action-modal';
+    modal.className = 'custom-confirm-modal';
+    modal.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;z-index:100000;background:rgba(0,0,0,0.45);';
+
+    modal.innerHTML = `
+        <div class="custom-confirm-modal-content" style="position:relative;background:#fff;color:#111;border-radius:8px;max-width:520px;width:90%;box-shadow:0 12px 36px rgba(0,0,0,0.25);padding:1rem;z-index:1;">
+            <div style="white-space:pre-wrap;font-size:1rem;margin-bottom:.75rem;" id="action-modal-body">
+                Escolha uma ação para este horário:
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+                <button id="action-confirmar" style="padding:.45rem .8rem;border-radius:4px;cursor:pointer;background:#007bff;color:#fff;border:none;">
+                    <i class="fas fa-check"></i> Confirmar presença
+                </button>
+                <button id="action-editar" style="padding:.45rem .8rem;border-radius:4px;cursor:pointer;background:transparent;border:1px solid #ccc;">
+                    <i class="fas fa-edit"></i> Editar horário
+                </button>
+                <button id="action-excluir" style="padding:.45rem .8rem;border-radius:4px;cursor:pointer;background:transparent;border:1px solid #ccc;">
+                    <i class="fas fa-trash"></i> Excluir horário
+                </button>
+                <button id="action-cancel" style="padding:.45rem .8rem;border-radius:4px;cursor:pointer;background:transparent;border:1px solid #ccc;">
+                    Cancelar
+                </button>
+            </div>
         </div>
     `;
 
-    if (membership.status === 'pending_aluno') {
-        const accept = document.getElementById('btnAceitarAcad');
-        const reject = document.getElementById('btnRejeitarAcad');
-        const handler = (acao) => {
-            fetch('php/confirmar_vinculo.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'acao=' + encodeURIComponent(acao) + '&membership_id=' + encodeURIComponent(membership.membership_id)
-            }).then(r => r.json()).then(() => {
-                container.innerHTML = '<div class="table-loading"><i class="fas fa-check"></i> Atualizado. Recarregue a página.</div>';
-            });
-        };
-        accept && accept.addEventListener('click', () => handler('aluno_aceitar'));
-        reject && reject.addEventListener('click', () => handler('aluno_rejeitar'));
+    document.body.appendChild(modal);
+    return modal;
+}
+
+// ==================== CONFIGURAÇÃO DE TROCA DE ACADEMIA ====================
+
+/**
+ * Configura funcionalidade de troca de academia
+ * @param {HTMLElement} selectElement
+ * @param {HTMLElement} buttonElement
+ * @param {HTMLElement} container
+ */
+async function setupTrocaAcademia(selectElement, buttonElement, container) {
+    if (!selectElement || !buttonElement) return;
+
+    try {
+        const data = await fetchAcademias();
+
+        selectElement.innerHTML = '<option value="">Selecionar nova academia...</option>';
+        (data.academias || []).forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.id;
+            opt.textContent = a.nome;
+            selectElement.appendChild(opt);
+        });
+
+        buttonElement.addEventListener('click', async () => {
+            const id = parseInt(selectElement.value || '0', 10);
+            if (!id) {
+                await window.showAlert('Selecione uma academia.');
+                return;
+            }
+
+            try {
+                await requestVinculo(id);
+                if (container) {
+                    container.innerHTML = '<div class="table-loading">Solicitação enviada. Aguarde aprovação do professor.</div>';
+                }
+            } catch (error) {
+                console.error('Erro ao solicitar vínculo:', error);
+                await window.showAlert('Erro ao solicitar vínculo. Tente novamente.');
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao carregar academias:', error);
     }
+}
+
+// ==================== TABS ====================
+
+/**
+ * Configura sistema de tabs
+ */
+function setupTabs() {
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.tab-btn');
+        if (!btn) return;
+
+        const tabName = btn.getAttribute('data-tab');
+
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+
+        const target = document.getElementById('tab-' + tabName);
+        if (target) target.classList.add('active');
+    });
+}
+
+// ==================== INICIALIZAÇÃO ====================
+
+/**
+ * Carrega e renderiza todos os dados do aluno
+ */
+async function loadAlunoData() {
+    try {
+        const data = await fetchAlunoData();
+
+        // Elementos do DOM
+        const alunoNome = document.getElementById('aluno_nome_text');
+        const faixaAluno = document.getElementById('faixa_aluno');
+        const aulasFaltando = document.getElementById('aulas_faltando');
+        const horariosTreinoContainer = document.getElementById('horarios_treino_container');
+        const historicoPresencaContainer = document.getElementById('historico_presenca_container');
+        const academiaContainer = document.getElementById('academia_container');
+        const btnCheckinLivre = document.getElementById('btn-checkin-livre');
+
+        // Nome do aluno
+        if (alunoNome) {
+            alunoNome.innerHTML = ` ${data.aluno.nome}`;
+        }
+
+        // Faixa e grau
+        if (faixaAluno) {
+            const faixaClass = `faixa-${data.aluno.faixa.toLowerCase()}`;
+            faixaAluno.innerHTML = `<span class="faixa ${faixaClass}"> Faixa ${data.aluno.faixa} - ${data.aluno.graus}° Grau </span>`;
+        }
+
+        // Aulas faltando
+        if (aulasFaltando) {
+            aulasFaltando.textContent = `Faltam ${data.aluno.aulas_faltando} aulas para a próxima graduação`;
+        }
+
+        // Academia (header)
+        renderAcademiaHeader(data.membership);
+
+        // Minha Academia (seção)
+        renderAcademia(data.membership, academiaContainer);
+
+        // Tabelas
+        criarTabelaHorariosTreino(data.horarios, horariosTreinoContainer);
+        criarTabelaHistoricoPresenca(data.checkins, historicoPresencaContainer);
+
+        // Botão de checkin livre
+        setupCheckinLivreButton(btnCheckinLivre, data.checkins);
+
+        // Troca de academia
+        const selTroca = document.getElementById('trocar_academia_select');
+        const btnTroca = document.getElementById('btn_trocar_academia');
+        await setupTrocaAcademia(selTroca, btnTroca, academiaContainer);
+
+        // Conta
+        const alunoNomeConta = document.getElementById('aluno-nome-conta');
+        const professorNome = document.getElementById('professor-nome');
+        const academiaNomeConta = document.getElementById('academia-nome-conta');
+        const formConta = document.getElementById('form-conta');
+        const nomeInput = document.getElementById('nome');
+        const emailInput = document.getElementById('email');
+
+        if (alunoNomeConta) alunoNomeConta.textContent = data.aluno?.nome || '';
+        if (professorNome) professorNome.textContent = data.professor?.nome || 'Não informado';
+        if (academiaNomeConta) academiaNomeConta.textContent = data.membership?.academia_nome || 'Não vinculado';
+        if (nomeInput) nomeInput.value = data.aluno?.nome || '';
+        if (emailInput) emailInput.value = data.aluno?.email || '';
+
+        if (formConta) {
+            formConta.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData();
+
+                // Sempre enviar nome se preenchido
+                const nome = nomeInput.value.trim();
+                if (nome) formData.append('nome', nome);
+
+                // Enviar email apenas se preenchido
+                const email = emailInput.value.trim();
+                if (email) formData.append('email', email);
+
+                // Enviar senha apenas se nova senha preenchida
+                const senhaAtual = document.getElementById('senha-atual').value.trim();
+                const novaSenha = document.getElementById('nova-senha').value.trim();
+                if (novaSenha) {
+                    if (!senhaAtual) {
+                        await window.showAlert('Para alterar a senha, informe a senha atual.');
+                        return;
+                    }
+                    formData.append('senha_atual', senhaAtual);
+                    formData.append('nova_senha', novaSenha);
+                }
+
+                // Verificar se algo foi alterado
+                if (formData.has('nome') || formData.has('email') || formData.has('nova_senha')) {
+                    try {
+                        const response = await fetch('php/update_aluno.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const text = await response.text();
+                        let result;
+                        try {
+                            result = JSON.parse(text);
+                        } catch (e) {
+                            result = { error: 'Resposta inválida do servidor. Verifique se o backend está implementado.' };
+                        }
+                        if (result.success) {
+                            await window.showAlert('Dados atualizados com sucesso!');
+                            location.reload();
+                        } else {
+                            await window.showAlert(result.error || 'Erro ao atualizar dados.');
+                        }
+                    } catch (error) {
+                        console.error('Erro ao atualizar conta:', error);
+                        await window.showAlert('Erro ao atualizar conta.');
+                    }
+                } else {
+                    await window.showAlert('Nenhuma alteração foi feita.');
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error('Erro ao carregar dados do aluno:', error);
+
+        const horariosTreinoContainer = document.getElementById('horarios_treino_container');
+        const historicoPresencaContainer = document.getElementById('historico_presenca_container');
+
+        if (horariosTreinoContainer) {
+            horariosTreinoContainer.innerHTML = '<div class="table-loading"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar dados</div>';
+        }
+        if (historicoPresencaContainer) {
+            historicoPresencaContainer.innerHTML = '<div class="table-loading"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar dados</div>';
+        }
+    }
+}
+
+// ==================== EVENT LISTENER PRINCIPAL ====================
+
+window.addEventListener('load', () => {
+    console.debug('[aluno.js] Inicializando aplicação...');
+
+    // Configurar tabs
+    setupTabs();
+
+    // Carregar dados do aluno
+    loadAlunoData();
+});
+
+// ==================== EXPORTS (para testes, se necessário) ====================
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        formatDateBr,
+        getTodayISO,
+        requestCheckin,
+        handleCheckinLivre,
+        handleCheckinHorario,
+        criarTabelaHorariosTreino,
+        criarTabelaHistoricoPresenca,
+        renderAcademia,
+        showActionModal
+    };
 }

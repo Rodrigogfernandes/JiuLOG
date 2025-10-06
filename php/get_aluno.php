@@ -19,7 +19,7 @@ $conn->query("UPDATE usuarios
               WHERE id=$aluno_id AND aulas_faltando <= 0");
 
 // Dados do aluno
-$res = $conn->query("SELECT nome, aulas_faltando, faixa, graus FROM usuarios WHERE id=$aluno_id");
+$res = $conn->query("SELECT nome, email, aulas_faltando, faixa, graus FROM usuarios WHERE id=$aluno_id");
 $aluno = $res->fetch_assoc();
 
 // Todos os horários da semana
@@ -50,7 +50,8 @@ while ($row = $checkins_res->fetch_assoc()) {
 // Retornar JSON
 // Membership atual (se existir)
 $membership = null;
-$mres = $conn->query("SELECT m.id as membership_id, m.status, m.academia_id, a.nome as academia_nome, a.logo_path
+$professor = null;
+$mres = $conn->query("SELECT m.id as membership_id, m.status, m.academia_id, a.nome as academia_nome, a.logo_path, a.professor_id
                       FROM academia_memberships m
                       JOIN academias a ON a.id=m.academia_id
                       WHERE m.aluno_id=$aluno_id
@@ -58,12 +59,18 @@ $mres = $conn->query("SELECT m.id as membership_id, m.status, m.academia_id, a.n
                       LIMIT 1");
 if ($mres && $mres->num_rows > 0) {
     $membership = $mres->fetch_assoc();
+    $professor_id = $membership['professor_id'];
+    $pres = $conn->query("SELECT nome FROM usuarios WHERE id=$professor_id");
+    if ($pres && $pres->num_rows > 0) {
+        $professor = $pres->fetch_assoc();
+    }
 }
 
 echo json_encode([
     'aluno' => $aluno,
     'horarios' => $horarios,
     'checkins' => $checkins,
-    'membership' => $membership
+    'membership' => $membership,
+    'professor' => $professor
 ]);
 ?>
