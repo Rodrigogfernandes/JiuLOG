@@ -28,14 +28,38 @@ if (!$check_checkin || $check_checkin->num_rows === 0) {
 try {
     // Atualizar status do check-in
     $sql = "UPDATE checkins SET status = '$status' WHERE id = $checkin_id";
-    
+
     if ($conn->query($sql)) {
-        header('Content-Type: application/json');
-        echo json_encode([
-            'ok' => true, 
+        $response = [
+            'ok' => true,
             'message' => 'Status atualizado com sucesso!',
             'status' => $status
-        ]);
+        ];
+
+        // Se aprovado, atualizar progresso do aluno
+        if ($status == 'aprovado') {
+            // Descobrir qual aluno fez o check-in
+            $res = $conn->query("SELECT aluno_id FROM checkins WHERE id=$checkin_id");
+            if ($res && $res->num_rows > 0) {
+                $aluno_id = $res->fetch_assoc()['aluno_id'];
+
+                // Diminuir em 1 no momento da aprovação
+                $conn->query("UPDATE usuarios SET aulas_faltando = aulas_faltando - 1 WHERE id=$aluno_id");
+
+                // Pega dados do aluno para verificar se zerou aulas_faltando
+                $aluno_res = $conn->query("SELECT aulas_faltando FROM usuarios WHERE id=$aluno_id");
+                $aluno = $aluno_res->fetch_assoc();
+
+                // Se zerou aulas_faltando, marcar para decisão de avanço
+                if ($aluno['aulas_faltando'] <= 0) {
+                    $response['needs_advance_decision'] = true;
+                    $response['aluno_id'] = $aluno_id;
+                }
+            }
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($response);
     } else {
         throw new Exception('Erro ao atualizar status: ' . $conn->error);
     }

@@ -265,10 +265,10 @@
                 <div id="checkin-info">
                     <!-- Informações do check-in serão preenchidas aqui -->
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
+                <div class="form-row1">
+                    <div class="form-group1">
                         <label>Status:</label>
-                        <select id="checkin-status" name="status">
+                        <select class="form-control" id="checkin-status" name="status">
                             <option value="pendente">Pendente</option>
                             <option value="aprovado">Aprovado</option>
                             <option value="reprovado">Reprovado</option>
@@ -285,6 +285,56 @@
                 </button>
                 <button type="button" class="btn btn-primary" id="btn-salvar-status">
                     <i class="fas fa-save"></i> Salvar Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Decisão de Avanço de Faixa -->
+    <div id="modal-avanco-faixa" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-trophy"></i> Avanço de Faixa</h3>
+                <button type="button" class="btn-fechar-modal" id="btn-fechar-modal-avanco">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>O aluno completou todas as aulas necessárias. Está apto para subir de faixa?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-nao-apto">
+                    <i class="fas fa-times"></i> Não Apto
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-sim-apto">
+                    <i class="fas fa-check"></i> Sim, Avançar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar Aulas Extras -->
+    <div id="modal-adicionar-aulas" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Adicionar Aulas Extras</h3>
+                <button type="button" class="btn-fechar-modal" id="btn-fechar-modal-aulas">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Quantas aulas extras o aluno deve fazer para concluir?</p>
+                <div class="form-group">
+                    <label for="num-aulas">Número de aulas:</label>
+                    <input type="number" id="num-aulas" min="1" max="100" value="10">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancelar-aulas">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-adicionar-aulas">
+                    <i class="fas fa-plus"></i> Adicionar
                 </button>
             </div>
         </div>

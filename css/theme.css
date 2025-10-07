@@ -785,6 +785,8 @@ html body header {
 }
 
 .aluno-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     background: rgba(255, 255, 255, 0.7);
     padding: 1rem;
     border-radius: var(--border-radius-small);
@@ -843,16 +845,17 @@ html body header {
     background: linear-gradient(135deg, #fd7e14, #f76707);
 }
 
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+/* .form-row {
+    display: flex;
     gap: 1rem;
-    margin-bottom: 1rem;
-}
+    max-width: 240px;
+    margin: 1rem auto;
+    flex-direction: column;
+} */
 
-.form-row .form-group {
+/* .form-row .form-group {
     margin-bottom: 0;
-}
+} */
 
 .form-row label {
     font-size: 0.9rem;
@@ -861,13 +864,98 @@ html body header {
     margin-bottom: 0.25rem;
 }
 
-.form-row select,
+/* .form-row select,
 .form-row input {
     padding: 0.5rem;
     font-size: 0.9rem;
     border: 1px solid #e1e5e9;
     border-radius: var(--border-radius-small);
+} */
+
+/* ---------------------------------------------------------------------- */
+
+/* Select de Status - Estilização */
+.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    padding: 10px 35px 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
 }
+
+.form-control:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Estilizar as opções */
+.form-control option {
+    padding: 10px;
+    background-color: #fff;
+    color: #333;
+}
+
+/* Cores específicas para cada status */
+#checkin-status option[value="pendente"] {
+    color: #ffc107;
+}
+
+#checkin-status option[value="aprovado"] {
+    color: #28a745;
+}
+
+#checkin-status option[value="reprovado"] {
+    color: #dc3545;
+}
+
+/* Opcional: Mudar cor do select baseado no valor selecionado */
+#checkin-status[data-value="pendente"] {
+    border-left: 3px solid #ffc107;
+}
+
+#checkin-status[data-value="aprovado"] {
+    border-left: 3px solid #28a745;
+}
+
+#checkin-status[data-value="reprovado"] {
+    border-left: 3px solid #dc3545;
+}
+
+/* Estilo para form-group1 e form-row1 */
+.form-row1 {
+    margin-bottom: 15px;
+}
+
+.form-group1 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group1 label {
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+}
+
+/* ---------------------------------------------------------------------- */
 
 /* Responsividade para aluno selecionado */
 
@@ -935,7 +1023,7 @@ html body header {
 
 .modal-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 1rem;
     padding: 1.5rem;
     border-top: 1px solid #e1e5e9;
@@ -985,7 +1073,7 @@ html body header {
 .modal-body {
     font-size: 1.5rem;
     line-height: 1.5;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     font-weight: 500;
     color: #334155;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;

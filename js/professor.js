@@ -1839,6 +1839,17 @@ window.addEventListener('load', () => {
             .then(r => r.json())
             .then(resp => {
                 if (resp && resp.ok) {
+                    // Verificar se precisa decisão de avanço
+                    if (resp.needs_advance_decision) {
+                        // Mostrar modal de decisão de avanço
+                        const modal = document.getElementById('modal-avanco-faixa');
+                        modal.dataset.alunoId = resp.aluno_id;
+                        modal.dataset.checkinId = id; // Para remover card depois
+                        modal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                        return; // Não remover card ainda
+                    }
+
                     // Remover card da lista
                     if (card && card.parentNode) card.parentNode.removeChild(card);
 
@@ -2029,5 +2040,133 @@ window.addEventListener('load', () => {
             console.error('Erro no handler global de dblclick:', err);
         }
     });
+
+    // Event listeners para modal de avanço de faixa
+    (function(){
+        const modalAvanco = document.getElementById('modal-avanco-faixa');
+        const btnFecharAvanco = document.getElementById('btn-fechar-modal-avanco');
+        const btnSimApto = document.getElementById('btn-sim-apto');
+        const btnNaoApto = document.getElementById('btn-nao-apto');
+
+        function fecharModalAvanco() {
+            modalAvanco.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        if (btnFecharAvanco) btnFecharAvanco.addEventListener('click', fecharModalAvanco);
+        if (modalAvanco) {
+            modalAvanco.addEventListener('click', function(e) {
+                if (e.target === modalAvanco) fecharModalAvanco();
+            });
+        }
+
+        if (btnSimApto) {
+            btnSimApto.addEventListener('click', function() {
+                const alunoId = modalAvanco.dataset.alunoId;
+                if (!alunoId) return;
+
+                btnSimApto.disabled = true;
+                btnSimApto.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Avançando...';
+
+                fetch('php/avancar_faixa.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'aluno_id=' + encodeURIComponent(alunoId)
+                })
+                .then(r => r.json())
+                .then(resp => {
+                    if (resp && resp.ok) {
+                        window.showAlert('Faixa avançada com sucesso!');
+                        fecharModalAvanco();
+                        // Remover card do check-in
+                        const checkinId = modalAvanco.dataset.checkinId;
+                        const card = document.querySelector(`.checkin-card[data-checkin-id="${checkinId}"]`);
+                        if (card) card.remove();
+                    } else {
+                        window.showAlert('Erro: ' + (resp.message || 'Erro desconhecido'));
+                        btnSimApto.disabled = false;
+                        btnSimApto.innerHTML = '<i class="fas fa-check"></i> Sim, Avançar';
+                    }
+                })
+                .catch(err => {
+                    console.error('Erro:', err);
+                    window.showAlert('Erro ao avançar faixa');
+                    btnSimApto.disabled = false;
+                    btnSimApto.innerHTML = '<i class="fas fa-check"></i> Sim, Avançar';
+                });
+            });
+        }
+
+        if (btnNaoApto) {
+            btnNaoApto.addEventListener('click', function() {
+                fecharModalAvanco();
+                // Mostrar modal para adicionar aulas
+                const modalAulas = document.getElementById('modal-adicionar-aulas');
+                modalAulas.dataset.alunoId = modalAvanco.dataset.alunoId;
+                modalAulas.dataset.checkinId = modalAvanco.dataset.checkinId;
+                modalAulas.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        }
+    })();
+
+    // Event listeners para modal de adicionar aulas
+    (function(){
+        const modalAulas = document.getElementById('modal-adicionar-aulas');
+        const btnFecharAulas = document.getElementById('btn-fechar-modal-aulas');
+        const btnCancelarAulas = document.getElementById('btn-cancelar-aulas');
+        const btnAdicionarAulas = document.getElementById('btn-adicionar-aulas');
+
+        function fecharModalAulas() {
+            modalAulas.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        if (btnFecharAulas) btnFecharAulas.addEventListener('click', fecharModalAulas);
+        if (btnCancelarAulas) btnCancelarAulas.addEventListener('click', fecharModalAulas);
+        if (modalAulas) {
+            modalAulas.addEventListener('click', function(e) {
+                if (e.target === modalAulas) fecharModalAulas();
+            });
+        }
+
+        if (btnAdicionarAulas) {
+            btnAdicionarAulas.addEventListener('click', function() {
+                const alunoId = modalAulas.dataset.alunoId;
+                const numAulas = document.getElementById('num-aulas').value;
+                if (!alunoId || !numAulas) return;
+
+                btnAdicionarAulas.disabled = true;
+                btnAdicionarAulas.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
+
+                fetch('php/adicionar_aulas.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'aluno_id=' + encodeURIComponent(alunoId) + '&num_aulas=' + encodeURIComponent(numAulas)
+                })
+                .then(r => r.json())
+                .then(resp => {
+                    if (resp && resp.ok) {
+                        window.showAlert(resp.message);
+                        fecharModalAulas();
+                        // Remover card do check-in
+                        const checkinId = modalAulas.dataset.checkinId;
+                        const card = document.querySelector(`.checkin-card[data-checkin-id="${checkinId}"]`);
+                        if (card) card.remove();
+                    } else {
+                        window.showAlert('Erro: ' + (resp.message || 'Erro desconhecido'));
+                        btnAdicionarAulas.disabled = false;
+                        btnAdicionarAulas.innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+                    }
+                })
+                .catch(err => {
+                    console.error('Erro:', err);
+                    window.showAlert('Erro ao adicionar aulas');
+                    btnAdicionarAulas.disabled = false;
+                    btnAdicionarAulas.innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+                });
+            });
+        }
+    })();
 
 });

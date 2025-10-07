@@ -21,7 +21,13 @@
             JiuLOG
         </div>
         <h2><i class="fas fa-user-graduate"></i> Cadastro de Aluno</h2>
-        
+
+        <!-- Aviso de erro -->
+        <div id="erro" class="alert alert-error d-none">
+            <i class="fas fa-exclamation-triangle"></i>
+            Email já cadastrado!
+        </div>
+
         <form method="POST" action="php/cadastro_aluno.php">
             <div class="form-group">
                 <input type="text" name="nome" placeholder="Digite seu nome completo" required>
@@ -90,6 +96,25 @@
                 }
               })
               .catch(() => {});
+
+            // Verificar erro na URL
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('erro')) {
+                const erro = document.getElementById('erro');
+                erro.classList.remove('d-none');
+                erro.classList.add('d-block');
+
+                // Esconder mensagem após 10 segundos
+                setTimeout(() => {
+                    erro.classList.add('d-none');
+                    erro.classList.remove('d-block');
+                }, 10000);
+
+                // Remover parâmetro da URL
+                params.delete('erro');
+                const newUrl = window.location.pathname + '?' + params.toString();
+                window.history.replaceState({}, '', newUrl);
+            }
         });
     </script>
 </body>
