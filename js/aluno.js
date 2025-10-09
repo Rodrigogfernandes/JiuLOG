@@ -1,10 +1,6 @@
 // ==================== UTILITÁRIOS ====================
 
-/**
- * Formata datas em DD/MM/YYYY
- * @param {Date|string} dateInput - Data a ser formatada
- * @returns {string} Data formatada em DD/MM/YYYY
- */
+
 function formatDateBr(dateInput) {
     if (!dateInput) return '';
 
@@ -37,10 +33,7 @@ function formatDateBr(dateInput) {
     return String(dateInput);
 }
 
-/**
- * Obtém data atual no formato YYYY-MM-DD
- * @returns {string}
- */
+
 function getTodayISO() {
     return new Date().toISOString().slice(0, 10);
 }
@@ -63,11 +56,6 @@ const AppState = {
 
 // ==================== API REQUESTS ====================
 
-/**
- * Realiza checkin (livre ou por horário)
- * @param {Object} params - Parâmetros do checkin
- * @returns {Promise<Object>}
- */
 async function requestCheckin({ horarioId = null, data, force = false }) {
     const endpoint = horarioId ? 'php/checkin.php' : 'php/checkin_livre.php';
     const body = new URLSearchParams();
@@ -95,30 +83,20 @@ async function requestCheckin({ horarioId = null, data, force = false }) {
     }
 }
 
-/**
- * Carrega dados do aluno
- * @returns {Promise<Object>}
- */
+
 async function fetchAlunoData() {
     const response = await fetch('php/get_aluno.php');
     return response.json();
 }
 
-/**
- * Carrega lista de academias
- * @returns {Promise<Object>}
- */
+
 async function fetchAcademias() {
     const response = await fetch('php/get_academias.php');
     return response.json();
 }
 
 
-/**
- * Solicita vínculo com academia
- * @param {number} academiaId
- * @returns {Promise<Object>}
- */
+
 async function requestVinculo(academiaId) {
     const response = await fetch('php/solicitar_vinculo.php', {
         method: 'POST',
@@ -128,12 +106,7 @@ async function requestVinculo(academiaId) {
     return response.json();
 }
 
-/**
- * Confirma ou rejeita vínculo
- * @param {string} acao - 'aluno_aceitar' ou 'aluno_rejeitar'
- * @param {number} membershipId
- * @returns {Promise<Object>}
- */
+
 async function confirmVinculo(acao, membershipId) {
     const response = await fetch('php/confirmar_vinculo.php', {
         method: 'POST',
@@ -145,11 +118,6 @@ async function confirmVinculo(acao, membershipId) {
 
 // ==================== CHECKIN HANDLERS ====================
 
-/**
- * Handler para checkin livre
- * @param {HTMLElement} button
- * @param {boolean} force - Se true, força checkin mesmo que já exista
- */
 async function handleCheckinLivre(button, force = false) {
     // Prevenir múltiplos cliques
     if (AppState.processingCheckin || button.disabled) return;
@@ -192,10 +160,7 @@ async function handleCheckinLivre(button, force = false) {
     }
 }
 
-/**
- * Handler para checkin por horário
- * @param {string} horarioId
- */
+
 async function handleCheckinHorario(horarioId) {
     const data = getTodayISO();
     const dataBr = formatDateBr(data);
@@ -222,11 +187,7 @@ async function handleCheckinHorario(horarioId) {
     }
 }
 
-/**
- * Configura botão de checkin livre baseado no histórico
- * @param {HTMLElement} button
- * @param {Array} checkins - Lista de checkins
- */
+
 function setupCheckinLivreButton(button, checkins) {
     if (!button) return;
 
@@ -264,10 +225,7 @@ function setupCheckinLivreButton(button, checkins) {
 
 // ==================== RENDERIZAÇÃO ====================
 
-/**
- * Renderiza informações da academia no header
- * @param {Object} membership
- */
+
 function renderAcademiaHeader(membership) {
     const academiaInfo = document.getElementById('academia_info_aluno');
     const academiaInfoMain = document.getElementById('academia_info');
@@ -303,11 +261,7 @@ function renderAcademiaHeader(membership) {
     }
 }
 
-/**
- * Renderiza seção "Minha Academia"
- * @param {Object} membership
- * @param {HTMLElement} container
- */
+
 function renderAcademia(membership, container) {
     if (!container) return;
 
@@ -375,11 +329,6 @@ function renderAcademia(membership, container) {
     }
 }
 
-/**
- * Cria tabela de horários de treino
- * @param {Array} horarios
- * @param {HTMLElement} container
- */
 function criarTabelaHorariosTreino(horarios, container) {
     if (!horarios || horarios.length === 0) {
         container.innerHTML = `
@@ -433,11 +382,7 @@ function criarTabelaHorariosTreino(horarios, container) {
     });
 }
 
-/**
- * Cria tabela de histórico de presença
- * @param {Array} checkins
- * @param {HTMLElement} container
- */
+
 function criarTabelaHistoricoPresenca(checkins, container) {
     if (!checkins || checkins.length === 0) {
         container.innerHTML = `
@@ -487,11 +432,6 @@ function criarTabelaHistoricoPresenca(checkins, container) {
     container.innerHTML = tabelaHTML;
 }
 
-/**
- * Retorna ícone apropriado para cada status
- * @param {string} status
- * @returns {string}
- */
 function getStatusIcon(status) {
     const icons = {
         aprovado: 'fa-check-circle',
@@ -504,10 +444,6 @@ function getStatusIcon(status) {
 
 // ==================== MODAL DE AÇÕES ====================
 
-/**
- * Exibe modal de ações para um horário
- * @param {string} horarioId
- */
 function showActionModal(horarioId) {
     // Prevenir abertura se já houver modal aberto
     if (AppState.isActionModalOpen) return;
@@ -569,10 +505,6 @@ function showActionModal(horarioId) {
     });
 }
 
-/**
- * Cria elemento HTML do modal de ações
- * @returns {HTMLElement}
- */
 function createActionModal() {
     const modal = document.createElement('div');
     modal.id = 'action-modal';
@@ -607,12 +539,6 @@ function createActionModal() {
 
 // ==================== CONFIGURAÇÃO DE TROCA DE ACADEMIA ====================
 
-/**
- * Configura funcionalidade de troca de academia
- * @param {HTMLElement} selectElement
- * @param {HTMLElement} buttonElement
- * @param {HTMLElement} container
- */
 async function setupTrocaAcademia(selectElement, buttonElement, container) {
     if (!selectElement || !buttonElement) return;
 
@@ -649,11 +575,6 @@ async function setupTrocaAcademia(selectElement, buttonElement, container) {
     }
 }
 
-// ==================== TABS ====================
-
-/**
- * Configura sistema de tabs
- */
 function setupTabs() {
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.tab-btn');
@@ -671,11 +592,8 @@ function setupTabs() {
     });
 }
 
-// ==================== INICIALIZAÇÃO ====================
 
-/**
- * Carrega e renderiza todos os dados do aluno
- */
+// ==================== CARREGAMENTO INICIAL ====================
 async function loadAlunoData() {
     try {
         const data = await fetchAlunoData();
@@ -806,8 +724,6 @@ async function loadAlunoData() {
         }
     }
 }
-
-// ==================== EVENT LISTENER PRINCIPAL ====================
 
 window.addEventListener('load', () => {
     console.debug('[aluno.js] Inicializando aplicação...');
