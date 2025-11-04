@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/aluno.css">
     <link rel="stylesheet" href="css/mobile.css">
-    <link rel="stylesheet" href="css/style.css">    
+    <link rel="stylesheet" href="css/style.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,7 +54,8 @@
                 <button class="tab-btn" data-tab="conta"><i class="fas fa-user-cog"></i> Conta</button>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
-                <button id="btn-checkin-livre" class="btn-3d"><i class="fas fa-check"></i> Marcar presença (Livre)</button>
+                <button id="btn-checkin-livre" class="btn-3d"><i class="fas fa-check"></i> Marcar presença
+                    (Livre)</button>
             </div>
         </div>
 
@@ -69,7 +70,8 @@
                     <select id="trocar_academia_select">
                         <option value="">Selecionar nova academia...</option>
                     </select>
-                    <button id="btn_trocar_academia" class="btn" style="margin-left:8px"><i class="fas fa-exchange-alt"></i> Solicitar troca</button>
+                    <button id="btn_trocar_academia" class="btn" style="margin-left:8px"><i
+                            class="fas fa-exchange-alt"></i> Solicitar troca</button>
                 </div>
             </div>
         </div>
@@ -101,27 +103,43 @@
                 <h3><i class="fas fa-user-cog"></i> Minha Conta</h3>
                 <div id="conta-info" style="margin-bottom:20px;text-align:center;">
                     <h4 id="aluno-nome-conta" style="margin:5px 0;"></h4>
-                    <p style="margin:5px 0;"><strong>Academia:</strong> <span id="academia-nome-conta">Carregando...</span></p>
-                    <p style="margin:5px 0;"><strong>Professor:</strong> <span id="professor-nome">Carregando...</span></p>
+                    <p style="margin:5px 0;"><strong>Academia:</strong> <span
+                            id="academia-nome-conta">Carregando...</span></p>
+                    <p style="margin:5px 0;"><strong>Professor:</strong> <span id="professor-nome">Carregando...</span>
+                    </p>
                 </div>
                 <form class="conta-form" id="form-conta">
+                    <div class="form-row">
                     <div class="form-group">
-                        <label for="nome">Nome:</label>
+                        <label for="nome">Nome Completo:</label>
                         <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apelido (será exibido no header):</label>
+                        <input type="text" name="apelido" id="conta-apelido" placeholder="Ex: João">
                     </div>
                     <div class="form-group">
                         <label for="email">Email:</label>
                         <input type="email" id="email" name="email">
                     </div>
-                    <div class="form-group">
-                        <label for="senha-atual">Senha Atual:</label>
-                        <input type="password" id="senha-atual" name="senha_atual">
                     </div>
-                    <div class="form-group">
-                        <label for="nova-senha">Nova Senha:</label>
-                        <input type="password" id="nova-senha" name="nova_senha">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="senha-atual">Senha Atual:</label>
+                            <input type="password" id="senha-atual" name="senha_atual">
+                        </div>
+                        <div class="form-group">
+                            <label for="nova-senha">Nova Senha:</label>
+                            <input type="password" id="nova-senha" name="nova_senha">
+                        </div>
+                        <label class="form-label">Deixe em branco para manter a senha atual</label>
                     </div>
-                    <button type="submit" class="btn">Salvar Alterações</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btn-excluir-conta">
+                        <i class="fas fa-trash"></i> Excluir Conta
+                    </button>
                 </form>
             </div>
         </div>
@@ -147,28 +165,28 @@
         document.addEventListener('DOMContentLoaded', createParticles);
     </script>
     <!-- Estrutura do modal (inicialmente oculto) -->
-<div id="action-modal" class="custom-confirm-modal">
-    <div class="custom-confirm-modal-content">
-        <div id="action-modal-body" class="modal-body">
-            Escolha uma ação para este horário:
-        </div>
-        <div class="modal-buttons">
-            <button id="action-confirmar" class="btn-confirm">
-                <i class="fas fa-check"></i> Confirmar presença
-            </button>
-            <button id="action-editar" class="btn-edit">
-                <i class="fas fa-edit"></i> Editar horário
-            </button>
-            <button id="action-excluir" class="btn-delete">
-                <i class="fas fa-trash"></i> Excluir horário
-            </button>
-            <button id="action-cancel" class="btn-cancel">
-                Cancelar
-            </button>
+    <div id="action-modal" class="custom-confirm-modal">
+        <div class="custom-confirm-modal-content">
+            <div id="action-modal-body" class="modal-body">
+                Escolha uma ação para este horário:
+            </div>
+            <div class="modal-buttons">
+                <button id="action-confirmar" class="btn-confirm">
+                    <i class="fas fa-check"></i> Confirmar presença
+                </button>
+                <button id="action-editar" class="btn-edit">
+                    <i class="fas fa-edit"></i> Editar horário
+                </button>
+                <button id="action-excluir" class="btn-delete">
+                    <i class="fas fa-trash"></i> Excluir horário
+                </button>
+                <button id="action-cancel" class="btn-cancel">
+                    Cancelar
+                </button>
+            </div>
         </div>
     </div>
-</div>
-<script src="js/custom-alert.js"></script>
+    <script src="js/custom-alert.js"></script>
 </body>
 
 </html>

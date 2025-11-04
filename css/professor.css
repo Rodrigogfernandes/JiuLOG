@@ -18,7 +18,8 @@ header {
     padding: 20px;
 }
 
-.horario, .checkin {
+.horario,
+.checkin {
     border: 1px solid #e60000;
     padding: 10px;
     margin: 10px 0;
@@ -40,19 +41,44 @@ button:hover {
 }
 
 button.logout-btn {
-    background-color: #e60000; /* vermelho padrão */
+    background-color: #e60000;
+    /* vermelho padrão */
     color: #fff;
     border: none;
     padding: 8px 15px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    float: right; /* botão no canto direito do header */
-    margin-top: -35px; /* ajustar se necessário */
+    float: right;
+    /* botão no canto direito do header */
+    margin-top: -35px;
+    /* ajustar se necessário */
     transition: all 0.2s ease-in-out;
 }
 
 button.logout-btn:hover {
-    background-color: #b30000; /* vermelho mais escuro ao passar mouse */
+    background-color: #b30000;
+    /* vermelho mais escuro ao passar mouse */
     transform: scale(1.05);
+}
+
+.conta-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    max-width: 100%;
+    justify-items: stretch;
+    margin: auto;
+    gap: 1rem;
+    justify-content: space-around;
+}
+
+.form-label {
+    font-size: .75rem !important;
+    background: gainsboro;
+    text-align: center;
+    color: navy !important;
+    margin-top: -.5rem;
+    border: 1px solid rgb(228 10 10);
+    border-radius: 5px;
+    padding: 0.5rem;
 }

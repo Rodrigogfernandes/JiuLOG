@@ -13,6 +13,10 @@
                 l.rel = 'stylesheet';
                 l.href = 'css/theme.css?v=' + Date.now();
                 document.head.appendChild(l);
+                var l = document.createElement('link');
+                l.rel = 'stylesheet';
+                l.href = 'css/professor.css?v=' + Date.now();
+                document.head.appendChild(l);
             } catch (e) { console.error('Erro ao injetar CSS com cache-buster', e); }
         })();
     </script>
@@ -97,11 +101,7 @@
                 <div id="alunos_table_container" style="margin-top:1rem; display:none;">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
                         <h4 style="margin:0"><i class="fas fa-users"></i> Alunos da Academia</h4>
-                        <!-- <div>
-                            <button type="button" id="btn-recarregar-alunos" class="btn btn-sm">
-                                <i class="fas fa-sync"></i> Recarregar
-                            </button>
-                        </div> -->
+                       
                         <a href="php/novo_aluno.php" class="novo-aluno-btn">
                             <i class="fas fa-user-plus"></i>
                             Novo Aluno
@@ -154,7 +154,7 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Nova Senha (deixe em branco para manter):</label>
+                                <label>Nova Senha:</label>
                                 <input type="password" name="nova_senha" id="conta-senha"
                                     placeholder="Digite nova senha">
                             </div>
@@ -163,6 +163,7 @@
                                 <input type="password" name="confirmar_senha" id="conta-confirmar-senha"
                                     placeholder="Confirme a nova senha">
                             </div>
+                            <label class="form-label">Deixe em branco para manter a senha atual</label>
                         </div>
 
                         <div class="form-row">

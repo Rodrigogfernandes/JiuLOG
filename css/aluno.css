@@ -4,7 +4,10 @@
     --primary-hover: #b30000;
     --secondary-color: #667eea;
     --secondary-hover: #764ba2;
-    --accent-color: #ff4444;
+    --accent-color: #ff4444;    
+    --success-color: #28a745;
+    --success-hover: #218838;
+    
 
     /* Cores de fundo */
     --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -23,7 +26,7 @@
     --shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.1);
 
     /* Bordas */
-    --border-radius: 15px;
+    --border-radius: 10px;
     --border-radius-small: 8px;
     --border-radius-large: 25px;
     --border-radius-abas: 0 0 15px 15px;
@@ -150,13 +153,13 @@ header {
 .conta-form {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 10px 20px;
     margin-bottom: 0;
-    max-width: 80%;
-    margin: 0 auto 20px auto;
+    margin: 20px auto;
 }
 
-.conta-form input, textarea {
+.conta-form input,
+textarea {
     width: 100%;
     padding: 0.5rem;
     border: 2px solid #e1e5e9;
@@ -166,4 +169,14 @@ header {
     background: var(--bg-card);
     color: var(--text-primary);
 }
-    
+
+.form-label {
+    font-size: .75rem !important;
+    background: gainsboro;
+    text-align: center;
+    color: navy !important;
+    margin-top: -.5rem;
+    border: 1px solid rgb(228 10 10);
+    border-radius: 5px;
+    padding: 0.5rem;
+}
