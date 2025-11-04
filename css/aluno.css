@@ -152,11 +152,50 @@ header {
 
 .conta-form {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr;
     gap: 10px 20px;
     margin-bottom: 0;
     margin: 20px auto;
+    max-width: 95%;
 }
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 10px;
+   
+}
+.form-actions .btn-primary1 {
+    background: var(--success-color) !important;
+    color: #fff !important;
+    font-size: 0.6rem;
+    width: 100% !important;
+}
+.form-actions .btn-primary1:hover {
+    background: var(--success-hover) !important;
+    color: #fff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 15px rgba(40, 167, 69, 0.4) !important;
+}
+
+.form-actions .btn-danger1 {
+    background: #dc3545 !important;
+    color: #fff !important;
+    font-size: 0.6rem;
+    width: 100% !important;
+}
+.form-actions .btn-danger1:hover {
+    background: #c82333 !important;
+    color: #fff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 15px rgba(220, 53, 69, 0.4) !important;
+}
+
+.form-actions .btn:hover::before {
+    display: none !important;
+}
+
 
 .conta-form input,
 textarea {
