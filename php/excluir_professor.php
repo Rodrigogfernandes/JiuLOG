@@ -41,6 +41,9 @@ try {
         $conn->query("DELETE FROM academias WHERE id IN ($ids_list)");
     }
     
+    // Excluir pasta do professor e todas as fotos
+    excluirPastaUsuario($professor_id);
+    
     // Excluir o professor
     $conn->query("DELETE FROM usuarios WHERE id=$professor_id");
     

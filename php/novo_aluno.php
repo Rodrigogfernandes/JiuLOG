@@ -40,6 +40,13 @@ if ($_POST) {
                     VALUES ('$nome', '$email', '$senha', 'aluno', '$faixa', $graus, 55)";
             
             if ($conn->query($sql)) {
+                $aluno_id = $conn->insert_id;
+                
+                // Criar pasta individual do usuário para fotos
+                if ($aluno_id > 0) {
+                    criarPastaUsuario($aluno_id);
+                }
+                
                 $sucesso = "Aluno cadastrado com sucesso!";
                 // Limpar formulário
                 $nome = $email = $senha = $confirmar_senha = '';

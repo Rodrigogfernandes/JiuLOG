@@ -44,7 +44,10 @@ try {
         }
     }
     
-    // 3. Remover o aluno da tabela usuarios
+    // 3. Excluir pasta do usuário e todas as fotos
+    excluirPastaUsuario($aluno_id);
+    
+    // 4. Remover o aluno da tabela usuarios
     $conn->query("DELETE FROM usuarios WHERE id = $aluno_id");
     
     // Confirmar transação

@@ -21,6 +21,11 @@ $stmt->bind_param('ssss', $nome, $email, $senha, $tipo);
 $stmt->execute();
 $professor_id = $conn->insert_id;
 
+// Criar pasta individual do usuário para fotos
+if ($professor_id > 0) {
+    criarPastaUsuario($professor_id);
+}
+
 // Upload simples de logo (opcional)
 $logo_path = NULL;
 if (!empty($_FILES['academia_logo']['name'])) {

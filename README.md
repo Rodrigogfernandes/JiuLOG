@@ -79,6 +79,7 @@ jiulog/
 ├── 📁 uploads/             # Arquivos enviados (logos, etc.)
 ├── 📄 *.html               # Páginas HTML do frontend
 ├── 📄 database_setup.sql   # Script de criação do banco
+├── 📄 setup_db.bat         # Script automatizado para criar banco
 ├── 📄 README.md            # Esta documentação
 └── 📄 *.bat                # Scripts de automação Windows
 ```
@@ -239,6 +240,37 @@ jiulog/
 - **Horário → Check-in**: 1:N
 - **Aluno → Check-in**: 1:N
 
+### Setup Automatizado do Banco
+
+O projeto inclui um script automatizado para criação e configuração do banco de dados:
+
+**`setup_db.bat`** - Script Windows para criar/atualizar o banco de dados automaticamente
+
+**Uso:**
+```bash
+# Método mais simples (usa padrões do XAMPP)
+setup_db.bat
+
+# Com credenciais personalizadas
+setup_db.bat [usuario] [senha] [host]
+
+# Exemplos:
+setup_db.bat                    # root, sem senha, localhost
+setup_db.bat root "" 127.0.0.1  # root, sem senha, 127.0.0.1
+setup_db.bat root minhaSenha localhost
+```
+
+**O que o script faz:**
+- ✅ Detecta automaticamente o MySQL do XAMPP
+- ✅ Importa o arquivo `database_setup.sql` completo
+- ✅ Cria todas as tabelas com estrutura completa
+- ✅ Insere dados de exemplo para testes
+- ✅ Valida instalação e exibe mensagens de erro claras
+
+**Requisitos:**
+- MySQL deve estar iniciado no XAMPP Control Panel
+- XAMPP instalado em `C:\xampp\` (ou ajustar variável no script)
+
 ---
 
 ## 🔌 APIs e Endpoints
@@ -314,6 +346,17 @@ jiulog/
    - Inicie **Apache** e **MySQL**
 
 4. **Configurar Banco de Dados**
+   
+   **Opção 1 - Automatizado (Recomendado):**
+   ```bash
+   # Execute o script de setup do banco
+   setup_db.bat
+   
+   # Ou com credenciais personalizadas:
+   setup_db.bat root minhaSenha localhost
+   ```
+   
+   **Opção 2 - Manual:**
    ```bash
    # Acesse http://localhost/phpmyadmin
    # Crie banco de dados: jiulog
@@ -434,7 +477,7 @@ jiulog/
 ├── 📁 uploads/                     # Arquivos enviados
 ├── 📄 run-server.bat               # Iniciar servidor
 ├── 📄 setup_windows.bat            # Setup Windows
-├── 📄 import-db.bat                # Importar banco
+├── 📄 setup_db.bat                 # Setup automatizado do banco (RECOMENDADO)
 ├── 📄 README.md                    # Esta documentação
 ├── 📄 LICENSE                      # Licença MIT
 ├── 📄 COMO_TESTAR.md              # Guia de testes

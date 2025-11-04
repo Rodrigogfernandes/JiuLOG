@@ -25,7 +25,7 @@ if not defined PHP_CMD (
 if not defined PHP_CMD (
   echo PHP não encontrado. Instale PHP ou XAMPP e adicione php.exe ao PATH.
   echo Dicas:
-  echo  - Se usar XAMPP, adicione C:\xampp\php ao PATH ou atualize a variavel XAMPP_PATH no arquivo import-db.bat
+  echo  - Se usar XAMPP, adicione C:\xampp\php ao PATH
   echo  - Para adicionar temporariamente ao PATH no Git Bash: export PATH="/c/xampp/php:$PATH"
   pause
   exit /b 1

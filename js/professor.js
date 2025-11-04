@@ -233,16 +233,24 @@ window.addEventListener('load', () => {
                         </tbody>
                     </table>
                     <div class="historico-actions">
-                        <button type="button" class="btn btn-sm btn-danger" id="btn-remover-vinculo" ${aluno && aluno.membership_id ? '' : 'disabled'}>
-                            <i class="fas fa-trash"></i> Remover vínculo
-                        </button>
+                        ${aluno && aluno.membership_id 
+                            ? `<button type="button" class="btn btn-sm btn-danger" id="btn-remover-vinculo">
+                                <i class="fas fa-trash"></i> Remover vínculo
+                            </button>`
+                            : `<button type="button" class="btn btn-sm btn-success" id="btn-criar-vinculo">
+                                <i class="fas fa-link"></i> Criar vínculo
+                            </button>`}
                     </div>
                 ` : `
                     <div class="search-no-results">Nenhum histórico de presença encontrado</div>
                     <div class="historico-actions">
-                        <button type="button" class="btn btn-sm btn-danger" id="btn-remover-vinculo" ${aluno && aluno.membership_id ? '' : 'disabled'}>
-                            <i class="fas fa-trash"></i> Remover vínculo
-                        </button>
+                        ${aluno && aluno.membership_id 
+                            ? `<button type="button" class="btn btn-sm btn-danger" id="btn-remover-vinculo">
+                                <i class="fas fa-trash"></i> Remover vínculo
+                            </button>`
+                            : `<button type="button" class="btn btn-sm btn-success" id="btn-criar-vinculo">
+                                <i class="fas fa-link"></i> Criar vínculo
+                            </button>`}
                     </div>
                 `;
 
@@ -312,6 +320,69 @@ window.addEventListener('load', () => {
                             btnRemover.disabled = false;
                             btnRemover.innerHTML = originalText;
                         });
+                    });
+                }
+
+                // Configurar botão de criar vínculo (se não houver membership)
+                const btnCriar = container.querySelector('#btn-criar-vinculo');
+                if (btnCriar && aluno) {
+                    btnCriar.addEventListener('click', async () => {
+                        // Obter academia_id do professor (primeira academia)
+                        const ok = await window.confirmModal('Criar vínculo deste aluno com sua academia?');
+                        if (!ok) return;
+
+                        const originalText = btnCriar.innerHTML;
+                        btnCriar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+                        btnCriar.disabled = true;
+
+                        // Buscar academia do professor
+                        fetch('php/get_professor.php')
+                            .then(r => r.json())
+                            .then(profData => {
+                                const academias = profData.academias || [];
+                                if (academias.length === 0) {
+                                    window.showAlert('Você precisa ter uma academia cadastrada primeiro.');
+                                    btnCriar.disabled = false;
+                                    btnCriar.innerHTML = originalText;
+                                    return;
+                                }
+
+                                const academia_id = academias[0].id; // Usar primeira academia
+
+                                fetch('php/criar_vinculo.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                    body: `aluno_id=${encodeURIComponent(aluno.id)}&academia_id=${encodeURIComponent(academia_id)}`
+                                })
+                                .then(r => r.json())
+                                .then(resp => {
+                                    if (resp && resp.ok) {
+                                        window.showAlert('Vínculo criado com sucesso!');
+                                        // Atualizar dados do aluno para incluir membership_id
+                                        aluno.membership_id = resp.membership_id;
+                                        // Recarregar histórico para atualizar o botão
+                                        carregarHistoricoPresenca(aluno.id, aluno);
+                                        // Recarregar lista de alunos
+                                        try { loadAlunosAcademia(true); } catch (e) { console.warn('Não foi possível recarregar a lista de alunos:', e); }
+                                    } else {
+                                        window.showAlert('Erro ao criar vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                                        btnCriar.disabled = false;
+                                        btnCriar.innerHTML = originalText;
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Erro ao criar vínculo:', err);
+                                    window.showAlert('Erro ao criar vínculo. Veja o console para mais detalhes.');
+                                    btnCriar.disabled = false;
+                                    btnCriar.innerHTML = originalText;
+                                });
+                            })
+                            .catch(err => {
+                                console.error('Erro ao buscar dados do professor:', err);
+                                window.showAlert('Erro ao buscar dados da academia.');
+                                btnCriar.disabled = false;
+                                btnCriar.innerHTML = originalText;
+                            });
                     });
                 }
 
@@ -708,61 +779,124 @@ window.addEventListener('load', () => {
                     });
                 }
 
-                // Handler para remover vínculo (apenas se existir membership_id)
+                // Handler para remover/criar vínculo
                 if (btnRemoverVinculo) {
+                    // Verificar se é botão de remover ou criar
+                    const isRemover = aluno && aluno.membership_id;
+                    
                     btnRemoverVinculo.addEventListener('click', async () => {
-                        const membershipId = aluno.membership_id || null;
-                        if (!membershipId) {
-                            window.showAlert('ID do vínculo não disponível para este aluno.');
-                            return;
-                        }
+                        if (isRemover) {
+                            // Remover vínculo
+                            const membershipId = aluno.membership_id || null;
+                            if (!membershipId) {
+                                window.showAlert('ID do vínculo não disponível para este aluno.');
+                                return;
+                            }
 
-                        const ok = await window.confirmModal('Remover vínculo deste aluno com a academia?');
-                        if (!ok) return;
+                            const ok = await window.confirmModal('Remover vínculo deste aluno com a academia?');
+                            if (!ok) return;
 
-                        const originalHtml = btnRemoverVinculo.innerHTML;
-                        btnRemoverVinculo.disabled = true;
-                        btnRemoverVinculo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removendo...';
+                            const originalHtml = btnRemoverVinculo.innerHTML;
+                            btnRemoverVinculo.disabled = true;
+                            btnRemoverVinculo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removendo...';
 
-                        fetch('php/confirmar_vinculo.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: 'acao=' + encodeURIComponent('prof_rejeitar') + '&membership_id=' + encodeURIComponent(membershipId)
-                        })
-                        .then(r => r.json())
-                        .then(resp => {
-                            if (resp && resp.ok) {
-                                // Fechar card de aluno selecionado
-                                const btnFecharCard = document.getElementById('btn-fechar-card');
-                                if (btnFecharCard) {
-                                    btnFecharCard.click();
-                                } else {
-                                    const alunosContainer = document.getElementById('alunos_container');
-                                    if (alunosContainer) {
-                                        alunosContainer.innerHTML = `
-                                            <div class="no-aluno-selected">
-                                                <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
-                                                <h3>Selecione um aluno</h3>
-                                                <p>Use a barra de pesquisa acima para encontrar e selecionar um aluno.</p>
-                                            </div>
-                                        `;
+                            fetch('php/confirmar_vinculo.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: 'acao=' + encodeURIComponent('prof_rejeitar') + '&membership_id=' + encodeURIComponent(membershipId)
+                            })
+                            .then(r => r.json())
+                            .then(resp => {
+                                if (resp && resp.ok) {
+                                    // Fechar card de aluno selecionado
+                                    const btnFecharCard = document.getElementById('btn-fechar-card');
+                                    if (btnFecharCard) {
+                                        btnFecharCard.click();
+                                    } else {
+                                        const alunosContainer = document.getElementById('alunos_container');
+                                        if (alunosContainer) {
+                                            alunosContainer.innerHTML = `
+                                                <div class="no-aluno-selected">
+                                                    <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                                                    <h3>Selecione um aluno</h3>
+                                                    <p>Use a barra de pesquisa acima para encontrar e selecionar um aluno.</p>
+                                                </div>
+                                            `;
+                                        }
                                     }
-                                }
 
-                                // Recarregar lista de alunos
-                                try { loadAlunosAcademia(true); } catch (e) { console.warn('Não foi possível recarregar a lista de alunos:', e); }
-                            } else {
-                                window.showAlert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                                    // Recarregar lista de alunos
+                                    try { loadAlunosAcademia(true); } catch (e) { console.warn('Não foi possível recarregar a lista de alunos:', e); }
+                                } else {
+                                    window.showAlert('Erro ao remover vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                                    btnRemoverVinculo.disabled = false;
+                                    btnRemoverVinculo.innerHTML = originalHtml;
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Erro ao remover vínculo:', err);
+                                window.showAlert('Erro ao remover vínculo. Veja o console para mais detalhes.');
                                 btnRemoverVinculo.disabled = false;
                                 btnRemoverVinculo.innerHTML = originalHtml;
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Erro ao remover vínculo:', err);
-                            window.showAlert('Erro ao remover vínculo. Veja o console para mais detalhes.');
-                            btnRemoverVinculo.disabled = false;
-                            btnRemoverVinculo.innerHTML = originalHtml;
-                        });
+                            });
+                        } else {
+                            // Criar vínculo
+                            const ok = await window.confirmModal('Criar vínculo deste aluno com sua academia?');
+                            if (!ok) return;
+
+                            const originalHtml = btnRemoverVinculo.innerHTML;
+                            btnRemoverVinculo.disabled = true;
+                            btnRemoverVinculo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+
+                            // Buscar academia do professor
+                            fetch('php/get_professor.php')
+                                .then(r => r.json())
+                                .then(profData => {
+                                    const academias = profData.academias || [];
+                                    if (academias.length === 0) {
+                                        window.showAlert('Você precisa ter uma academia cadastrada primeiro.');
+                                        btnRemoverVinculo.disabled = false;
+                                        btnRemoverVinculo.innerHTML = originalHtml;
+                                        return;
+                                    }
+
+                                    const academia_id = academias[0].id; // Usar primeira academia
+
+                                    fetch('php/criar_vinculo.php', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                        body: `aluno_id=${encodeURIComponent(aluno.id)}&academia_id=${encodeURIComponent(academia_id)}`
+                                    })
+                                    .then(r => r.json())
+                                    .then(resp => {
+                                        if (resp && resp.ok) {
+                                            window.showAlert('Vínculo criado com sucesso!');
+                                            // Atualizar dados do aluno para incluir membership_id
+                                            aluno.membership_id = resp.membership_id;
+                                            // Recarregar histórico para atualizar o botão
+                                            carregarHistoricoPresenca(aluno.id, aluno);
+                                            // Recarregar lista de alunos
+                                            try { loadAlunosAcademia(true); } catch (e) { console.warn('Não foi possível recarregar a lista de alunos:', e); }
+                                        } else {
+                                            window.showAlert('Erro ao criar vínculo: ' + (resp && resp.erro ? resp.erro : (resp && resp.message ? resp.message : 'Erro desconhecido')));
+                                            btnRemoverVinculo.disabled = false;
+                                            btnRemoverVinculo.innerHTML = originalHtml;
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error('Erro ao criar vínculo:', err);
+                                        window.showAlert('Erro ao criar vínculo. Veja o console para mais detalhes.');
+                                        btnRemoverVinculo.disabled = false;
+                                        btnRemoverVinculo.innerHTML = originalHtml;
+                                    });
+                                })
+                                .catch(err => {
+                                    console.error('Erro ao buscar dados do professor:', err);
+                                    window.showAlert('Erro ao buscar dados da academia.');
+                                    btnRemoverVinculo.disabled = false;
+                                    btnRemoverVinculo.innerHTML = originalHtml;
+                                });
+                        }
                     });
                 }
                 if (btnAdicionarHorarios) {

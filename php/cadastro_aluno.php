@@ -24,6 +24,11 @@ $stmt->bind_param('ssssiii', $nome, $email, $senha, $tipo, $faixa, $graus, $falt
 $stmt->execute();
 $aluno_id = $conn->insert_id;
 
+// Criar pasta individual do usuário para fotos
+if ($aluno_id > 0) {
+    criarPastaUsuario($aluno_id);
+}
+
 // Criar solicitação de vínculo com academia (confirmação mútua)
 if ($academia_id > 0) {
     $stmt2 = $conn->prepare("INSERT INTO academia_memberships (aluno_id, academia_id, status) VALUES (?,?, 'pending_professor')");
