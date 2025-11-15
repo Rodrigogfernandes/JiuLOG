@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JiuLOG - Sistema de Gestão de Jiu-Jitsu</title>
-    <link rel="icon" type="image/png" href="assets/images/favicon/jiu_jitsu2.png">
-    <link rel="stylesheet" href="public/css/index.css">
+    <title>Cadastro Professor - JiuLOG</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon/jiu_jitsu2.png">
+    <link rel="stylesheet" href="../css/theme.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Partículas flutuantes para efeito visual -->
+    <!-- Partículas flutuantes -->
     <div class="particles" id="particles"></div>
     
     <div class="container">
@@ -20,17 +20,36 @@
             <i class="fas fa-fist-raised"></i>
             JiuLOG
         </div>
-        <p class="subtitle">Sistema de Gestão para Academia de Jiu-Jitsu</p>
+        <h2><i class="fas fa-chalkboard-teacher"></i> Cadastro de Professor</h2>
+        
+        <form method="POST" action="../../api/auth/cadastro_professor.php" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="text" name="nome" placeholder="Digite seu nome completo" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Digite seu email" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="senha" placeholder="Crie uma senha" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="academia_nome" placeholder="Nome da academia" required>
+            </div>
+            <div class="form-group">
+                <label style="display:block;margin-bottom:6px;opacity:.85"><i class="fas fa-image"></i> Logomarca da academia</label>
+                <input type="file" name="academia_logo" accept="image/*">
+            </div>
+            <button type="submit" class="btn w-100">
+                <i class="fas fa-user-plus"></i>
+                Cadastrar
+            </button>
+        </form>
         
         <div class="button-container">
-            <button class="btn" onclick="window.location.href='public/auth/login_aluno.html'">
-                <i class="fas fa-user-graduate"></i>
-                Sou Aluno
-            </button>
-            <button class="btn btn-secondary" onclick="window.location.href='public/auth/login_professor.html'">
-                <i class="fas fa-chalkboard-teacher"></i>
-                Sou Professor
-            </button>
+            <a href="login_professor.html" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Login
+            </a>
         </div>
     </div>
 
@@ -38,21 +57,16 @@
         // Criar partículas flutuantes
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
-            const particleCount = 20;
+            const particleCount = 15;
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
                 
-                // Tamanho aleatório
                 const size = Math.random() * 4 + 2;
                 particle.style.width = size + 'px';
                 particle.style.height = size + 'px';
-                
-                // Posição horizontal aleatória
                 particle.style.left = Math.random() * 100 + '%';
-                
-                // Delay aleatório para animação
                 particle.style.animationDelay = Math.random() * 6 + 's';
                 particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
                 
@@ -60,19 +74,8 @@
             }
         }
         
-        // Inicializar partículas quando a página carregar
+        // Inicializar partículas
         document.addEventListener('DOMContentLoaded', createParticles);
-        
-        // Adicionar efeito de hover nos botões
-        document.querySelectorAll('.btn').forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-3px) scale(1.02)';
-            });
-            
-            btn.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        });
     </script>
 </body>
 </html>

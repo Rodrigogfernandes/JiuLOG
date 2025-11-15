@@ -58,30 +58,27 @@
 
 ```
 jiulog/
-├── 📁 css/                 # Folhas de estilo
-│   ├── aluno.css          # Estilos específicos do dashboard aluno
-│   ├── index.css          # Estilos da página inicial
-│   ├── login.css          # Estilos das páginas de login
-│   ├── mobile.css         # Estilos responsivos
-│   ├── professor.css      # Estilos específicos do dashboard professor
-│   ├── style.css          # Estilos gerais
-│   └── theme.css          # Tema e variáveis CSS
-├── 📁 js/                  # Scripts JavaScript
-│   ├── aluno.js           # Lógica do dashboard aluno
-│   ├── custom-alert.js    # Sistema de alertas customizados
-│   └── professor.js       # Lógica do dashboard professor
-├── 📁 objects/             # Recursos estáticos
-│   └── images/
-│       └── favicon/       # Ícones e favicons
-├── 📁 php/                 # Backend PHP
-│   ├── db.php             # Configuração da conexão com banco
-│   ├── *.php              # Scripts PHP (APIs, autenticação, etc.)
-├── 📁 uploads/             # Arquivos enviados (logos, etc.)
-├── 📄 *.html               # Páginas HTML do frontend
-├── 📄 database_setup.sql   # Script de criação do banco
-├── 📄 setup_db.bat         # Script automatizado para criar banco
+├── 📁 public/              # Arquivos públicos acessíveis
+│   ├── 📁 auth/            # Páginas de autenticação
+│   ├── 📁 dashboard/       # Dashboards do sistema
+│   ├── 📁 css/             # Folhas de estilo
+│   ├── 📁 js/              # Scripts JavaScript
+│   ├── 📁 uploads/         # Arquivos enviados
+├── 📄 index.html           # Página inicial (raiz)
+├── 📁 api/                 # Backend PHP (API)
+│   ├── 📁 config/          # Configurações (db.php)
+│   ├── 📁 auth/            # Autenticação
+│   ├── 📁 alunos/          # Gerenciamento de alunos
+│   ├── 📁 professores/     # Gerenciamento de professores
+│   ├── 📁 academias/       # Gerenciamento de academias
+│   ├── 📁 checkins/        # Gerenciamento de check-ins
+│   └── 📁 horarios/        # Gerenciamento de horários
+├── 📁 assets/              # Recursos estáticos (imagens, favicons)
+├── 📁 config/              # Arquivos de configuração (SQL)
+├── 📁 docs/                # Documentação
+├── 📁 scripts/             # Scripts de automação
 ├── 📄 README.md            # Esta documentação
-└── 📄 *.bat                # Scripts de automação Windows
+└── 📄 LICENSE              # Licença MIT
 ```
 
 ---
@@ -275,46 +272,61 @@ setup_db.bat root minhaSenha localhost
 
 ## 🔌 APIs e Endpoints
 
-### Endpoints PHP (Backend)
+### Documentação Completa
 
-#### **Autenticação**
-- `php/login_aluno.php` - Login de alunos
-- `php/login_professor.php` - Login de professores
-- `php/cadastro_aluno.php` - Cadastro de alunos
-- `php/cadastro_professor.php` - Cadastro de professores
-- `php/logout.php` - Logout do sistema
+📖 **Documentação completa da API:** 
+- **[docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md)** - Documentação detalhada de todos os endpoints, incluindo métodos HTTP, parâmetros, respostas e exemplos
+- **[docs/ENDPOINTS_INDEX.md](docs/ENDPOINTS_INDEX.md)** - Índice rápido de todos os endpoints organizados por funcionalidade
 
-#### **APIs de Dados**
-- `php/get_aluno.php` - Dados do aluno logado
-- `php/get_professor.php` - Dados do professor logado
-- `php/get_alunos_academia.php` - Lista alunos da academia
-- `php/get_alunos.php` - Lista geral de alunos
-- `php/get_historico_presenca.php` - Histórico de presenças
-- `php/get_aluno_horarios.php` - Horários do aluno
-- `php/get_academias.php` - Lista de academias disponíveis
+### Resumo dos Endpoints
 
-#### **Operações**
-- `php/checkin.php` - Registrar check-in em aula
-- `php/checkin_livre.php` - Registrar check-in livre
-- `php/aprovar.php` - Aprovar/reprovar check-in
-- `php/alterar_status_checkin.php` - Alterar status de check-in
-- `php/atribuir_horario.php` - Atribuir horário a aluno
-- `php/remover_horario.php` - Remover horário do aluno
-- `php/editar_aluno.php` - Editar dados do aluno
-- `php/editar_professor.php` - Editar dados do professor
-- `php/editar_horario.php` - Editar horário
-- `php/aula.php` - CRUD de aulas (professor)
-- `php/salvar_academia.php` - Salvar dados da academia
-- `php/buscar_alunos.php` - Buscar alunos por nome/email
-- `php/confirmar_vinculo.php` - Confirmar vínculo aluno-academia
-- `php/solicitar_vinculo.php` - Solicitar vínculo com academia
-- `php/excluir_aluno.php` - Excluir aluno
-- `php/excluir_professor.php` - Excluir professor
-- `php/excluir_checkin.php` - Excluir check-in
+#### **Autenticação** (`/api/auth/`)
+- `POST login_aluno.php` - Login de alunos
+- `POST login_professor.php` - Login de professores
+- `POST cadastro_aluno.php` - Cadastro de alunos
+- `POST cadastro_professor.php` - Cadastro de professores
+- `POST logout.php` - Logout do sistema
 
-#### **Utilitários**
-- `php/upgrade_schema.php` - Atualizar estrutura do banco
-- `php/schema.sql` - Esquema completo do banco
+#### **Alunos** (`/api/alunos/`)
+- `GET get_aluno.php` - Dados do aluno logado
+- `GET get_alunos.php` - Lista geral de alunos
+- `GET get_alunos_academia.php` - Lista alunos da academia
+- `GET get_historico_presenca.php` - Histórico de presenças
+- `GET buscar_alunos.php` - Buscar alunos por nome/email
+- `POST update_aluno.php` - Atualizar dados do aluno
+- `POST editar_aluno.php` - Editar dados do aluno (professor)
+- `POST excluir_aluno.php` - Excluir aluno
+- `POST novo_aluno.php` - Criar novo aluno
+- `POST avancar_faixa.php` - Avançar faixa do aluno
+- `POST alterar_faixa.php` - Alterar faixa manualmente
+
+#### **Professores** (`/api/professores/`)
+- `GET get_professor.php` - Dados do professor logado
+- `POST editar_professor.php` - Editar dados do professor
+- `POST excluir_professor.php` - Excluir professor
+
+#### **Academias** (`/api/academias/`)
+- `GET get_academias.php` - Lista de academias disponíveis
+- `POST salvar_academia.php` - Salvar dados da academia
+- `POST solicitar_vinculo.php` - Solicitar vínculo com academia
+- `POST confirmar_vinculo.php` - Confirmar vínculo aluno-academia
+- `POST criar_vinculo.php` - Criar vínculo direto (professor)
+
+#### **Check-ins** (`/api/checkins/`)
+- `POST checkin.php` - Registrar check-in em aula
+- `POST checkin_livre.php` - Registrar check-in livre
+- `POST alterar_status_checkin.php` - Alterar status de check-in
+- `POST excluir_checkin.php` - Excluir check-in
+
+#### **Horários** (`/api/horarios/`)
+- `GET get_aluno_horarios.php` - Horários do aluno
+- `POST atribuir_horario.php` - Atribuir horário a aluno
+- `POST remover_horario.php` - Remover horário do aluno
+- `POST editar_horario.php` - Editar horário
+- `POST adicionar_aulas.php` - Adicionar aulas ao contador
+
+#### **Utilitários** (`/api/config/`)
+- `POST upgrade_schema.php` - Atualizar estrutura do banco
 
 ---
 
@@ -378,7 +390,7 @@ setup_db.bat root minhaSenha localhost
    ```
 
 ### Configuração de Produção
-- Configure credenciais seguras no `db.php`
+- Configure credenciais seguras no `api/config/db.php`
 - Implemente hash de senhas adequado
 - Configure HTTPS
 - Ajuste permissões de arquivos
@@ -389,7 +401,7 @@ setup_db.bat root minhaSenha localhost
 ## 📖 Como Usar
 
 ### Primeiro Acesso
-1. Acesse `index.html`
+1. Acesse `index.html` (na raiz do projeto)
 2. Escolha seu tipo de usuário
 3. Faça cadastro ou login
 
@@ -446,42 +458,89 @@ setup_db.bat root minhaSenha localhost
 
 ```
 jiulog/
-├── 📄 index.html                    # Página inicial
-├── 📄 login_aluno.html             # Login alunos
-├── 📄 cadastro_aluno.html          # Cadastro alunos
-├── 📄 login_professor.html         # Login professores
-├── 📄 cadastro_professor.html      # Cadastro professores
-├── 📄 dashboard_aluno.html         # Dashboard alunos
-├── 📄 professor.html               # Dashboard professores
-├── 📄 database_setup.sql           # Setup banco de dados
-├── 📄 .env                         # Variáveis ambiente (se usado)
-├── 📄 .gitattributes               # Configurações Git
-├── 📁 css/
-│   ├── 📄 style.css                # Estilos base
-│   ├── 📄 theme.css                # Variáveis e tema
-│   ├── 📄 index.css                # Página inicial
-│   ├── 📄 login.css                # Páginas login
-│   ├── 📄 aluno.css                # Dashboard aluno
-│   ├── 📄 professor.css            # Dashboard professor
-│   └── 📄 mobile.css               # Responsividade
-├── 📁 js/
-│   ├── 📄 aluno.js                 # Lógica dashboard aluno
-│   ├── 📄 professor.js             # Lógica dashboard professor
-│   └── 📄 custom-alert.js          # Sistema alertas
-├── 📁 php/
-│   ├── 📄 db.php                   # Conexão banco
-│   ├── 📄 *.php                    # Scripts PHP (~40 arquivos)
-│   └── 📄 schema.sql               # Esquema alternativo
-├── 📁 objects/images/
-│   └── 📁 favicon/                 # Ícones
-├── 📁 uploads/                     # Arquivos enviados
-├── 📄 run-server.bat               # Iniciar servidor
-├── 📄 setup_windows.bat            # Setup Windows
-├── 📄 setup_db.bat                 # Setup automatizado do banco (RECOMENDADO)
+├── 📄 index.html                   # Página inicial (raiz)
+├── 📁 public/                      # Arquivos públicos acessíveis pelo navegador
+│   ├── 📁 auth/                    # Páginas de autenticação
+│   │   ├── 📄 login_aluno.html
+│   │   ├── 📄 login_professor.html
+│   │   ├── 📄 cadastro_aluno.html
+│   │   └── 📄 cadastro_professor.html
+│   ├── 📁 dashboard/               # Dashboards do sistema
+│   │   ├── 📄 dashboard_aluno.html
+│   │   └── 📄 professor.html
+│   ├── 📁 css/                     # Estilos CSS
+│   │   ├── 📄 style.css
+│   │   ├── 📄 theme.css
+│   │   ├── 📄 index.css
+│   │   ├── 📄 login.css
+│   │   ├── 📄 aluno.css
+│   │   ├── 📄 professor.css
+│   │   └── 📄 mobile.css
+│   ├── 📁 js/                      # Scripts JavaScript
+│   │   ├── 📄 aluno.js
+│   │   ├── 📄 professor.js
+│   │   └── 📄 custom-alert.js
+│   └── 📁 uploads/                 # Arquivos enviados (logos, fotos)
+├── 📁 api/                         # Backend PHP (API)
+│   ├── 📁 config/                  # Configurações
+│   │   ├── 📄 db.php               # Conexão com banco de dados
+│   │   └── 📄 upgrade_schema.php
+│   ├── 📁 auth/                    # Autenticação
+│   │   ├── 📄 login_aluno.php
+│   │   ├── 📄 login_professor.php
+│   │   ├── 📄 logout.php
+│   │   ├── 📄 cadastro_aluno.php
+│   │   └── 📄 cadastro_professor.php
+│   ├── 📁 alunos/                  # Gerenciamento de alunos
+│   │   ├── 📄 get_aluno.php
+│   │   ├── 📄 get_alunos.php
+│   │   ├── 📄 get_alunos_academia.php
+│   │   ├── 📄 get_historico_presenca.php
+│   │   ├── 📄 buscar_alunos.php
+│   │   ├── 📄 editar_aluno.php
+│   │   ├── 📄 update_aluno.php
+│   │   ├── 📄 novo_aluno.php
+│   │   ├── 📄 excluir_aluno.php
+│   │   ├── 📄 alterar_faixa.php
+│   │   └── 📄 avancar_faixa.php
+│   ├── 📁 professores/             # Gerenciamento de professores
+│   │   ├── 📄 get_professor.php
+│   │   ├── 📄 editar_professor.php
+│   │   └── 📄 excluir_professor.php
+│   ├── 📁 academias/               # Gerenciamento de academias
+│   │   ├── 📄 get_academias.php
+│   │   ├── 📄 salvar_academia.php
+│   │   ├── 📄 solicitar_vinculo.php
+│   │   ├── 📄 confirmar_vinculo.php
+│   │   └── 📄 criar_vinculo.php
+│   ├── 📁 checkins/                # Gerenciamento de check-ins
+│   │   ├── 📄 checkin.php
+│   │   ├── 📄 checkin_livre.php
+│   │   ├── 📄 alterar_status_checkin.php
+│   │   └── 📄 excluir_checkin.php
+│   └── 📁 horarios/                # Gerenciamento de horários
+│       ├── 📄 get_aluno_horarios.php
+│       ├── 📄 atribuir_horario.php
+│       ├── 📄 remover_horario.php
+│       ├── 📄 editar_horario.php
+│       ├── 📄 adicionar_aulas.php
+├── 📁 assets/                      # Recursos estáticos
+│   └── 📁 images/
+│       └── 📁 favicon/
+│           └── 📄 jiu_jitsu2.png
+├── 📁 config/                      # Arquivos de configuração
+│   ├── 📄 database_setup.sql       # Script de setup do banco
+│   └── 📄 schema.sql               # Esquema do banco
+├── 📁 docs/                        # Documentação
+│   ├── 📄 COMO_TESTAR.md
+│   └── 📄 GUIA_DE_TESTE.md
+├── 📁 scripts/                     # Scripts de automação
+│   ├── 📄 setup_db.bat             # Setup automatizado do banco
+│   ├── 📄 setup_windows.bat        # Setup Windows
+│   └── 📄 run-server.bat           # Iniciar servidor
 ├── 📄 README.md                    # Esta documentação
 ├── 📄 LICENSE                      # Licença MIT
-├── 📄 COMO_TESTAR.md              # Guia de testes
-└── 📄 GUIA_DE_TESTE.md            # Guia adicional
+└── 📄 package-lock.json            # Dependências Node (se houver)
 ```
 
 ---

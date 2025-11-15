@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Mestre - JiuLOG</title>
+    <script>
+        // Injetar CSS com cache-buster para evitar cache do navegador durante desenvolvimento
+        (function(){
+            try {
+                var l = document.createElement('link');
+                l.rel = 'stylesheet';
+                l.href = '../css/theme.css?v=' + Date.now();
+                document.head.appendChild(l);
+                var l = document.createElement('link');
+                l.rel = 'stylesheet';
+                l.href = '../css/professor.css?v=' + Date.now();
+                document.head.appendChild(l);
+            } catch (e) { console.error('Erro ao injetar CSS com cache-buster', e); }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+    <script src="../js/custom-alert.js" defer></script>
+    <script src="../js/professor.js" defer></script>
+    <script>
+        // Script temporário de debug: adiciona uma classe ao header para confirmar aplicação do CSS
+        document.addEventListener('DOMContentLoaded', function(){
+            try { document.querySelector('header')?.classList.add('header-debug-highlight'); } catch(e){}
+        });
+    </script>
+</head>
+
+<body>
+    <!-- Partículas flutuantes -->
+    <div class="particles" id="particles"></div>
+
+    <header>
+        <div class="header-left">
+            <div id="academia_info">
+                <div id="academia_logo"></div>
+            </div>
+            <div class="header-title">
+            <span id="academia_nome"></span>
+            <h2>Mestre <span id="professor_nome"></span></h2>
+            </div>
+        </div>
+        
+        
+        <div class="header-actions">
+            <a href="../../api/auth/logout.php" class="btn logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Sair
+            </a>
+        </div>
+    </header>
+
+    <div class="container-dashboard">
+        <!-- Navegação por abas -->
+        <div class="tabs-navigation">
+            <button class="tab-btn active" data-tab="checkins">
+                <i class="fas fa-clock"></i> Check-ins
+            </button>
+            <button class="tab-btn" data-tab="alunos">
+                <i class="fas fa-users"></i> Alunos
+            </button>
+            <button class="tab-btn" data-tab="solicitacoes">
+                <i class="fas fa-handshake"></i> Solicitações
+            </button>
+            <button class="tab-btn" data-tab="conta">
+                <i class="fas fa-user-cog"></i> Minha Conta
+            </button>
+        </div>
+
+        <!-- Aba: Check-ins pendentes -->
+        <div id="tab-checkins" class="tab-content active">
+            <div class="card">
+                <h3><i class="fas fa-clock"></i> Check-ins Pendentes</h3>
+                <div id="checkins_container" class="grid grid-2">
+                    <!-- JS irá preencher os check-ins aqui -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba: Gerenciar Alunos -->
+        <div id="tab-alunos" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-search"></i> Encontrar Aluno</h3>
+                <div class="search-box">
+                    <input type="text" id="search" placeholder="Digite o nome ou email do aluno..." autocomplete="off"
+                        spellcheck="false">
+                </div>
+                <div id="search-results" class="search-results" style="display: none;">
+                    <!-- Resultados da busca aparecerão aqui -->
+                </div>
+                <!-- Lista de alunos associados à academia -->
+                <div id="alunos_table_container" style="margin-top:1rem; display:none;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <h4 style="margin:0"><i class="fas fa-users"></i> Alunos da Academia</h4>
+                       
+                        <a href="../../api/alunos/novo_aluno.php" class="novo-aluno-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Novo Aluno
+                        </a>
+                    </div>
+                    <div id="alunos_table_area" style="margin-top:0.75rem;">
+                        <!-- JS preencherá a tabela aqui -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-users"></i> Gerenciar Aluno Selecionado</h3>
+                <div id="alunos_container" class="grid grid-3">
+                    <!-- JS irá preencher os alunos aqui -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba: Solicitações de Academia -->
+        <div id="tab-solicitacoes" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-handshake"></i> Solicitações de Academia</h3>
+                <div id="solicitacoes_container">
+                    <div class="table-loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba: Gerenciar Conta -->
+        <div id="tab-conta" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-user-cog"></i> Minha Conta</h3>
+                <div id="conta_container">
+                    <form id="form-editar-conta" class="conta-form" enctype="multipart/form-data">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome:</label>
+                                <input type="text" name="nome" id="conta-nome" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Apelido (será exibido no header):</label>
+                                <input type="text" name="apelido" id="conta-apelido" placeholder="Ex: Mestre João">
+                            </div>
+                            <div class="form-group">
+                                <label>Email:</label>
+                                <input type="email" name="email" id="conta-email" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nova Senha:</label>
+                                <input type="password" name="nova_senha" id="conta-senha"
+                                    placeholder="Digite nova senha">
+                            </div>
+                            <div class="form-group">
+                                <label>Confirmar Nova Senha:</label>
+                                <input type="password" name="confirmar_senha" id="conta-confirmar-senha"
+                                    placeholder="Confirme a nova senha">
+                            </div>
+                            <label class="form-label">Deixe em branco para manter a senha atual</label>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Academia:</label>
+                                <input type="text" name="academia_nome" id="conta-academia"
+                                    placeholder="Nome da academia">
+                            </div>
+                            <div class="form-group">
+                                <label>Logo da Academia:</label>
+                                <input type="file" name="academia_logo" id="conta-logo" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                            <button type="button" class="btn btn-danger" id="btn-excluir-conta">
+                                <i class="fas fa-trash"></i> Excluir Conta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal de Edição do Aluno -->
+    <div id="modal-editar-aluno" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-edit"></i> Editar Aluno</h3>
+                <button type="button" class="btn-fechar-modal" id="btn-fechar-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-aluno" class="aluno-form">
+                    <input type="hidden" name="aluno_id" id="modal-aluno-id">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nome:</label>
+                            <input type="text" name="nome" id="modal-aluno-nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" name="email" id="modal-aluno-email" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Faixa:</label>
+                            <select name="faixa" id="modal-aluno-faixa">
+                                <option value="Branca">Branca</option>
+                                <option value="Azul">Azul</option>
+                                <option value="Roxa">Roxa</option>
+                                <option value="Marrom">Marrom</option>
+                                <option value="Preta">Preta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Grau:</label>
+                            <input type="number" name="graus" id="modal-aluno-graus" min="0" max="4">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Aulas para subir de nível:</label>
+                            <input type="number" name="aulas_faltando" id="modal-aluno-aulas" min="0" max="100">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancelar-edicao">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-salvar-edicao">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Gerenciar Check-in -->
+    <div id="modal-gerenciar-checkin" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-check"></i> Gerenciar Check-in</h3>
+                <button type="button" class="btn-fechar-modal" id="btn-fechar-modal-checkin">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="checkin-info">
+                    <!-- Informações do check-in serão preenchidas aqui -->
+                </div>
+                <div class="form-row1">
+                    <div class="form-group1">
+                        <label>Status:</label>
+                        <select class="form-control" id="checkin-status" name="status">
+                            <option value="pendente">Pendente</option>
+                            <option value="aprovado">Aprovado</option>
+                            <option value="reprovado">Reprovado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="btn-excluir-checkin">
+                    <i class="fas fa-trash"></i> Excluir Check-in
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-cancelar-checkin">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-salvar-status">
+                    <i class="fas fa-save"></i> Salvar Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Decisão de Avanço de Faixa -->
+    <div id="modal-avanco-faixa" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-trophy"></i> Avanço de Faixa</h3>
+                <button type="button" class="btn-fechar-modal" id="btn-fechar-modal-avanco">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>O aluno completou todas as aulas necessárias. Está apto para subir de faixa?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-nao-apto">
+                    <i class="fas fa-times"></i> Não Apto
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-sim-apto">
+                    <i class="fas fa-check"></i> Sim, Avançar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar Aulas Extras -->
+    <div id="modal-adicionar-aulas" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Adicionar Aulas Extras</h3>
+                <button type="button" class="btn-fechar-modal" id="btn-fechar-modal-aulas">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Quantas aulas extras o aluno deve fazer para concluir?</p>
+                <div class="form-group">
+                    <label for="num-aulas">Número de aulas:</label>
+                    <input type="number" id="num-aulas" min="1" max="100" value="10">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancelar-aulas">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-adicionar-aulas">
+                    <i class="fas fa-plus"></i> Adicionar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Criar partículas flutuantes
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 10;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                const size = Math.random() * 3 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Inicializar partículas
+        document.addEventListener('DOMContentLoaded', createParticles);
+    </script>
+</body>
+
+</html>
