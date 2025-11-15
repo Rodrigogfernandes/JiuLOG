@@ -4,13 +4,13 @@ include __DIR__ . '/../config/db.php';
 
 // Verificar se o método é POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: ../../public/auth/cadastro_aluno.html");
+    header("Location: ../../index.html");
     exit;
 }
 
 // Verificar se os campos foram enviados
 if (!isset($_POST['nome']) || !isset($_POST['email']) || !isset($_POST['senha'])) {
-    header("Location: ../../public/auth/cadastro_aluno.html?erro=1");
+    header("Location: ../../index.html?erro=1");
     exit;
 }
 
@@ -22,13 +22,13 @@ $academia_id = isset($_POST['academia_id']) ? intval($_POST['academia_id']) : 0;
 // Verificar se email já existe
 $check = $conn->query("SELECT * FROM usuarios WHERE email='$email'");
 if ($check && $check->num_rows > 0) {
-    header("Location: ../../public/auth/cadastro_aluno.html?erro=1");
+    header("Location: ../../index.html?erro=1");
     exit;
 }
 
 // Validar campos
 if (empty($nome) || empty($email) || empty($senha)) {
-    header("Location: ../../public/auth/cadastro_aluno.html?erro=1");
+    header("Location: ../../index.html?erro=1");
     exit;
 }
 
@@ -42,7 +42,7 @@ $faltando = 55;
 $stmt->bind_param('ssssiii', $nome, $email, $senha, $tipo, $faixa, $graus, $faltando);
 if (!$stmt->execute()) {
     error_log("Erro ao cadastrar aluno: " . $stmt->error);
-    header("Location: ../../public/auth/cadastro_aluno.html?erro=1");
+    header("Location: ../../index.html?erro=1");
     exit;
 }
 $aluno_id = $conn->insert_id;
@@ -59,6 +59,6 @@ if ($academia_id > 0) {
     $stmt2->execute();
 }
 
-header("Location: ../../public/auth/login_aluno.html");
+header("Location: ../../index.html");
 exit;
 ?>

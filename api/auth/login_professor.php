@@ -4,13 +4,13 @@ include __DIR__ . '/../config/db.php';
 
 // Verificar se o método é POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: ../../public/auth/login_professor.html");
+    header("Location: ../../index.html");
     exit;
 }
 
 // Verificar se os campos foram enviados
 if (!isset($_POST['email']) || !isset($_POST['senha'])) {
-    header("Location: ../../public/auth/login_professor.html?erro=1");
+    header("Location: ../../index.html?erro=1");
     exit;
 }
 
@@ -26,7 +26,7 @@ if($result->num_rows > 0){
     $_SESSION['tipo'] = $user['tipo'];
     header("Location: ../../public/dashboard/professor.html");
 } else {
-    header("Location: ../../public/auth/login_professor.html?erro=1");
+    header("Location: ../../index.html?erro=1");
     exit;
 }
 ?>

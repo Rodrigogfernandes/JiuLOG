@@ -4,7 +4,7 @@ include __DIR__ . '/../config/db.php';
 
 // Verificar se é professor
 if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] != 'professor') {
-    header("Location: ../../public/auth/login_professor.html?erro=1");
+    header("Location: ../../index.html?erro=1");
     exit;
 }
 
