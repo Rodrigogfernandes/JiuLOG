@@ -1,71 +1,282 @@
+/* Estilos específicos - Botão 3D e Custom Modals */
+
+/* Botão 3D */
 .btn-3d {
-  background: linear-gradient(180deg, #4a90e2 0%, #357ABD 100%);
-  color: #fff;
-  font-weight: 600;
-  font-size: 17px;
-  padding: 9px 14px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  letter-spacing: 0.5px;
-  /* Sombras para o efeito 3D realista */
-  box-shadow:
-    0 6px 0 #265d9c,   /* sombra sólida da base */
-    0 6px 15px rgba(0, 0, 0, 0.25); /* sombra difusa suave */
-  transition: all 0.2s ease-in-out;
-  position: relative;
-  user-select: none;
+    background: linear-gradient(180deg, var(--primary-solid), #5568d3);
+    color: #fff;
+    font-weight: 600;
+    font-size: 17px;
+    padding: 9px 14px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow:
+        0 6px 0 #4a5bc4,
+        0 6px 15px rgba(0, 0, 0, 0.25);
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    user-select: none;
 }
 
-/* Brilho no hover */
 .btn-3d:hover {
-  background: linear-gradient(180deg, #5aa2f0 0%, #3e85d1 100%);
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 #265d9c,
-    0 8px 18px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(180deg, #7680f0, #667eea);
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 0 #4a5bc4,
+        0 8px 18px rgba(0, 0, 0, 0.3);
 }
 
-/* Pressionado */
 .btn-3d:active {
-  transform: translateY(4px);
-  box-shadow:
-    0 2px 0 #265d9c,
-    0 2px 8px rgba(0, 0, 0, 0.25);
-}
-tr:active {
-  background-color: rgba(0, 0, 0, 0.1);
-  transition: background-color 0.2s;
+    transform: translateY(4px);
+    box-shadow:
+        0 2px 0 #4a5bc4,
+        0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
-.custom-confirm-card{
-    display: flex;
+tr:active {
+    background-color: rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s;
+}
+
+/* ===== CUSTOM ALERT MODAL ===== */
+.custom-alert-modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+.custom-alert-backdrop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.custom-alert-card {
     position: relative;
     background: #fff;
     color: #111;
     border-radius: 8px;
-    max-width: 470px ! important;
-    max-height: 255px;
-    height: 90%;
+    max-width: 560px;
     width: 90%;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
     padding: 1rem;
     z-index: 1;
-    justify-content: space-around;
+}
+
+.custom-alert-header {
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+}
+
+.custom-alert-header strong {
+    font-weight: 600;
+}
+
+.custom-alert-body {
+    white-space: pre-wrap;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.custom-alert-actions {
+    text-align: right;
+}
+
+.custom-alert-actions .btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+}
+
+.custom-alert-actions .btn:hover {
+    background: #0056b3;
+}
+
+.custom-alert-actions .btn:active {
+    background: #004085;
+}
+
+/* ===== CUSTOM CONFIRM MODAL ===== */
+.custom-confirm-modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
     align-items: center;
-    flex-wrap: wrap;
+    justify-content: center;
+    z-index: 100000;
+}
+
+.custom-confirm-modal.active {
+    display: flex;
+}
+
+.custom-confirm-backdrop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.custom-confirm-card {
+    position: relative;
+    background: #fff;
+    color: #111;
+    border-radius: 8px;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+    padding: 1rem;
+    z-index: 1;
 }
 
 .custom-confirm-body {
-    white-space: pre-wrap ! important;
-    font-size: 1.5rem ! important;
-    margin-bottom: .75rem ! important;
+    white-space: pre-wrap;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .custom-confirm-actions {
-    display: flex
-;
+    display: flex;
     gap: 8px;
-    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.custom-confirm-actions .btn {
+    padding: 0.45rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.custom-confirm-actions .btn:not(.btn-outline) {
+    background: #007bff;
+    color: #fff;
+}
+
+.custom-confirm-actions .btn:not(.btn-outline):hover {
+    background: #0056b3;
+}
+
+.custom-confirm-actions .btn:not(.btn-outline):active {
+    background: #004085;
+}
+
+.custom-confirm-actions .btn-outline {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #111;
+}
+
+.custom-confirm-actions .btn-outline:hover {
+    background: #f8f9fa;
+    border-color: #999;
+}
+
+.custom-confirm-actions .btn-outline:active {
+    background: #e9ecef;
+    border-color: #666;
+}
+
+/* ===== MODAL DE AÇÕES (Action Modal) ===== */
+.custom-confirm-modal-content {
+    position: relative;
+    background: #fff;
+    color: #111;
+    border-radius: 8px;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+    padding: 1rem;
+    z-index: 1;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
     flex-wrap: wrap;
+}
+
+.modal-buttons button {
+    padding: 0.45rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-buttons .btn-confirm {
+    background: #007bff;
+    color: #fff;
+}
+
+.modal-buttons .btn-confirm:hover {
+    background: #0056b3;
+}
+
+.modal-buttons .btn-confirm:active {
+    background: #004085;
+}
+
+.modal-buttons .btn-edit,
+.modal-buttons .btn-delete,
+.modal-buttons .btn-cancel {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #111;
+}
+
+.modal-buttons .btn-edit:hover,
+.modal-buttons .btn-delete:hover,
+.modal-buttons .btn-cancel:hover {
+    background: #f8f9fa;
+    border-color: #999;
+}
+
+.modal-buttons .btn-edit:active,
+.modal-buttons .btn-delete:active,
+.modal-buttons .btn-cancel:active {
+    background: #e9ecef;
+    border-color: #666;
+}
+
+.modal-buttons .btn-delete {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.modal-buttons .btn-delete:hover {
+    background: #fff5f5;
+    border-color: #c82333;
+}
+
+.modal-buttons .btn-delete:active {
+    background: #ffe0e0;
+    border-color: #bd2130;
 }

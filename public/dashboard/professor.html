@@ -5,21 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Mestre - JiuLOG</title>
-    <script>
-        // Injetar CSS com cache-buster para evitar cache do navegador durante desenvolvimento
-        (function(){
-            try {
-                var l = document.createElement('link');
-                l.rel = 'stylesheet';
-                l.href = '../css/theme.css?v=' + Date.now();
-                document.head.appendChild(l);
-                var l = document.createElement('link');
-                l.rel = 'stylesheet';
-                l.href = '../css/professor.css?v=' + Date.now();
-                document.head.appendChild(l);
-            } catch (e) { console.error('Erro ao injetar CSS com cache-buster', e); }
-        })();
-    </script>
+    <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/professor.css">
+    <link rel="stylesheet" href="../css/mobile.css">
+    <link rel="stylesheet" href="../css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -52,7 +41,7 @@
         
         
         <div class="header-actions">
-            <a href="../../api/auth/logout.php" class="btn logout-btn">
+            <a href="../../api/auth/logout.php" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
                 Sair
             </a>
@@ -179,10 +168,10 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary1">
                                 <i class="fas fa-save"></i> Salvar Alterações
                             </button>
-                            <button type="button" class="btn btn-danger" id="btn-excluir-conta">
+                            <button type="button" class="btn btn-danger1" id="btn-excluir-conta">
                                 <i class="fas fa-trash"></i> Excluir Conta
                             </button>
                         </div>

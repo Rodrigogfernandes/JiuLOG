@@ -23,20 +23,8 @@
             </div>
         `;
 
-        const style = document.createElement('style');
-        style.id = 'custom-alert-styles';
-        style.textContent = '\n' +
-            '.custom-alert-modal{position:fixed;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:99999}\n' +
-            '.custom-alert-backdrop{position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.45)}\n' +
-            '.custom-alert-card{position:relative;background:#fff;color:#111;border-radius:8px;max-width:560px;width:90%;box-shadow:0 12px 36px rgba(0,0,0,0.25);padding:1rem;z-index:1}\n' +
-            '.custom-alert-header{font-size:1.05rem;margin-bottom:.5rem}\n' +
-            '.custom-alert-body{white-space:pre-wrap;font-size:1rem;margin-bottom:.5rem}\n' +
-            '.custom-alert-actions{text-align:right}\n' +
-            '.custom-alert-actions .btn{background:#007bff;color:#fff;border:none;padding:.5rem .8rem;border-radius:4px;cursor:pointer}';
-
         function appendNow(){
             if (!document.head || !document.body) return setTimeout(appendNow, 50);
-            if (!document.getElementById('custom-alert-styles')) document.head.appendChild(style);
             if (!document.getElementById('custom-alert-modal')) document.body.appendChild(modalEl);
 
             const ok = document.getElementById('custom-alert-ok');
@@ -114,13 +102,29 @@
         } catch(e) { try { window.__nativeAlert && window.__nativeAlert(message); } catch(_) {} }
     }; window.showNotification = window.showAlert; } catch(e) {}
 
-    // Implementação interna do modal de confirmação (fila não-bloqueante)
+        // Implementação interna do modal de confirmação (fila não-bloqueante)
     (function(){
         const queue = [];
         let showing = false;
+        let currentResolve = null;
+        let currentOkHandler = null;
+        let currentCancelHandler = null;
 
         function ensureConfirmDom() {
-            if (document.getElementById('custom-confirm-modal')) return;
+            // Se já existe o modal no DOM, apenas retornar
+            const existing = document.getElementById('custom-confirm-modal');
+            if (existing) {
+                return; // Já existe, não criar outro
+            }
+
+            // Remover qualquer modal duplicado que possa existir
+            const allModals = document.querySelectorAll('.custom-confirm-modal');
+            allModals.forEach(modal => {
+                if (modal.id !== 'custom-confirm-modal') {
+                    modal.remove();
+                }
+            });
+
             const modalEl = document.createElement('div');
             modalEl.id = 'custom-confirm-modal';
             modalEl.className = 'custom-confirm-modal';
@@ -136,20 +140,8 @@
                 </div>
             `;
 
-            const style = document.createElement('style');
-            style.id = 'custom-confirm-styles';
-            style.textContent = '\n' +
-                '.custom-confirm-modal{position:fixed;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:100000}\n' +
-                '.custom-confirm-backdrop{position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.45)}\n' +
-                '.custom-confirm-card{position:relative;background:#fff;color:#111;border-radius:8px;max-width:520px;width:90%;box-shadow:0 12px 36px rgba(0,0,0,0.25);padding:1rem;z-index:1}\n' +
-                '.custom-confirm-body{white-space:pre-wrap;font-size:1rem;margin-bottom:.75rem}\n' +
-                '.custom-confirm-actions{display:flex;gap:8px;justify-content:flex-end}\n' +
-                '.custom-confirm-actions .btn{padding:.45rem .8rem;border-radius:4px;cursor:pointer}\n' +
-                '.custom-confirm-actions .btn-outline{background:transparent;border:1px solid #ccc}';
-
             function appendNow(){
                 if (!document.head || !document.body) return setTimeout(appendNow, 50);
-                if (!document.getElementById('custom-confirm-styles')) document.head.appendChild(style);
                 if (!document.getElementById('custom-confirm-modal')) document.body.appendChild(modalEl);
             }
 
@@ -157,47 +149,176 @@
             else appendNow();
         }
 
+        function cleanup() {
+            // Se não está mostrando, não fazer nada
+            if (!showing) {
+                return;
+            }
+            
+            const modal = document.getElementById('custom-confirm-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                // Remover classes ativas
+                modal.classList.remove('active');
+            }
+            
+            showing = false;
+            document.body && (document.body.style.overflow = 'auto');
+            
+            // Remover event listeners
+            const btnOk = document.getElementById('custom-confirm-ok');
+            const btnCancel = document.getElementById('custom-confirm-cancel');
+            if (btnOk && currentOkHandler) {
+                btnOk.removeEventListener('click', currentOkHandler);
+            }
+            if (btnCancel && currentCancelHandler) {
+                btnCancel.removeEventListener('click', currentCancelHandler);
+            }
+            
+            // Limpar referências
+            currentOkHandler = null;
+            currentCancelHandler = null;
+            const resolve = currentResolve;
+            currentResolve = null;
+            
+            // Pequeno delay para permitir animação antes de mostrar próximo
+            setTimeout(() => {
+                // Verificar novamente se não está mostrando antes de mostrar próximo
+                if (!showing) {
+                    showNext();
+                }
+            }, 150);
+        }
+
         function showNext() {
-            if (showing) return;
+            // Se já está mostrando, não fazer nada
+            if (showing) {
+                return;
+            }
+            
+            // Se não há nada na fila, não fazer nada
+            if (queue.length === 0) {
+                return;
+            }
+            
             const next = queue.shift();
-            if (!next) return;
+            if (!next) {
+                return;
+            }
+            
             showing = true;
+            currentResolve = next.resolve;
             ensureConfirmDom();
+            
             const modal = document.getElementById('custom-confirm-modal');
             const body = document.getElementById('custom-confirm-body');
             const btnOk = document.getElementById('custom-confirm-ok');
             const btnCancel = document.getElementById('custom-confirm-cancel');
-            if (body) body.textContent = String(next.message === undefined ? '' : next.message);
-            if (modal) modal.style.display = 'flex';
-            document.body && (document.body.style.overflow = 'hidden');
-
-            function cleanup() {
-                if (modal) modal.style.display = 'none';
+            
+            if (!modal || !body || !btnOk || !btnCancel) {
+                console.error('[confirmModal] Elementos do modal não encontrados');
                 showing = false;
-                document.body && (document.body.style.overflow = 'auto');
-                if (btnOk) btnOk.removeEventListener('click', onOk);
-                if (btnCancel) btnCancel.removeEventListener('click', onCancel);
-                // small delay to allow animation
-                setTimeout(showNext, 80);
+                if (currentResolve) {
+                    currentResolve(false);
+                    currentResolve = null;
+                }
+                setTimeout(showNext, 100);
+                return;
+            }
+            
+            body.textContent = String(next.message === undefined ? '' : next.message);
+            
+            // Garantir que apenas este modal esteja visível
+            modal.style.display = 'flex';
+            modal.classList.add('active');
+            document.body && (document.body.style.overflow = 'hidden');
+            
+            // Forçar foco no modal para evitar cliques acidentais fora
+            modal.focus();
+
+            function onOk(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Resolver antes de limpar para evitar race conditions
+                const resolve = currentResolve;
+                cleanup();
+                
+                if (resolve) {
+                    resolve(true);
+                }
+            }
+            
+            function onCancel(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Resolver antes de limpar para evitar race conditions
+                const resolve = currentResolve;
+                cleanup();
+                
+                if (resolve) {
+                    resolve(false);
+                }
             }
 
-            function onOk() { cleanup(); next.resolve(true); }
-            function onCancel() { cleanup(); next.resolve(false); }
+            // Remover listeners anteriores se existirem
+            if (currentOkHandler) {
+                btnOk.removeEventListener('click', currentOkHandler);
+            }
+            if (currentCancelHandler) {
+                btnCancel.removeEventListener('click', currentCancelHandler);
+            }
 
-            if (btnOk) btnOk.addEventListener('click', onOk);
-            if (btnCancel) btnCancel.addEventListener('click', onCancel);
+            // Adicionar novos listeners
+            currentOkHandler = onOk;
+            currentCancelHandler = onCancel;
+            btnOk.addEventListener('click', onOk);
+            btnCancel.addEventListener('click', onCancel);
+            
+            // Fechar ao clicar no backdrop
+            const backdrop = modal.querySelector('.custom-confirm-backdrop');
+            if (backdrop) {
+                // Remover listener anterior se existir
+                const existingHandler = backdrop._backdropHandler;
+                if (existingHandler) {
+                    backdrop.removeEventListener('click', existingHandler);
+                }
+                
+                const backdropHandler = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    backdrop.removeEventListener('click', backdropHandler);
+                    onCancel(e);
+                };
+                
+                // Guardar referência para poder remover depois
+                backdrop._backdropHandler = backdropHandler;
+                backdrop.addEventListener('click', backdropHandler);
+            }
         }
 
         // Expor API: window.confirmModal(message) -> Promise<boolean>
         try {
             window.confirmModal = function(message){
+                // Se já está mostrando um modal, adicionar à fila
+                if (showing) {
+                    console.warn('[confirmModal] Já existe um modal aberto, adicionando à fila');
+                }
                 return new Promise(resolve => {
                     queue.push({ message: message, resolve });
-                    // se não está mostrando nada, iniciar
-                    setTimeout(showNext, 0);
+                    // Se não está mostrando nada, iniciar
+                    if (!showing) {
+                        setTimeout(showNext, 0);
+                    }
                 });
             };
-        } catch(e) { /* ignore */ }
+        } catch(e) {
+            console.error('[confirmModal] Erro ao criar função:', e);
+        }
     })();
 
     // Se existirem alertas disparados antes do carregamento, drenar

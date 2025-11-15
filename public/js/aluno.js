@@ -119,11 +119,20 @@ async function confirmVinculo(acao, membershipId) {
 // ==================== CHECKIN HANDLERS ====================
 
 async function handleCheckinLivre(button, force = false) {
-    // Prevenir múltiplos cliques
-    if (AppState.processingCheckin || button.disabled) {
-        console.log('[handleCheckinLivre] Já está processando ou botão desabilitado');
+    // Prevenir múltiplos cliques - verificação mais rigorosa
+    if (AppState.processingCheckin) {
+        console.log('[handleCheckinLivre] Já está processando, ignorando clique');
         return;
     }
+    
+    if (button.disabled) {
+        console.log('[handleCheckinLivre] Botão desabilitado, ignorando clique');
+        return;
+    }
+
+    // Desabilitar botão imediatamente para prevenir cliques múltiplos
+    button.disabled = true;
+    AppState.setProcessingCheckin(true);
 
     const data = getTodayISO();
     const dataBr = formatDateBr(data);
@@ -134,21 +143,35 @@ async function handleCheckinLivre(button, force = false) {
 
     // Verificar se confirmModal está disponível
     let confirmed = false;
-    if (typeof window.confirmModal !== 'function') {
-        console.error('[handleCheckinLivre] window.confirmModal não está disponível, usando confirm nativo');
+    try {
+        if (typeof window.confirmModal !== 'function') {
+            console.error('[handleCheckinLivre] window.confirmModal não está disponível, usando confirm nativo');
+            confirmed = window.confirm(message);
+        } else {
+            // Garantir que apenas um modal seja aberto por vez
+            confirmed = await window.confirmModal(message);
+        }
+    } catch (error) {
+        console.error('[handleCheckinLivre] Erro ao exibir modal:', error);
+        // Em caso de erro, restaurar estado e usar confirm nativo como fallback
+        button.disabled = false;
+        AppState.setProcessingCheckin(false);
         confirmed = window.confirm(message);
-    } else {
-        confirmed = await window.confirmModal(message);
+        if (!confirmed) return;
+        // Se confirmou, desabilitar novamente
+        button.disabled = true;
+        AppState.setProcessingCheckin(true);
     }
     
     if (!confirmed) {
         console.log('[handleCheckinLivre] Usuário cancelou');
+        // Restaurar estado se cancelou
+        button.disabled = false;
+        AppState.setProcessingCheckin(false);
         return;
     }
 
-    // Marcar como processando
-    AppState.setProcessingCheckin(true);
-    button.disabled = true;
+    // Botão já está desabilitado e processando, apenas atualizar visual
     const originalHtml = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
@@ -164,7 +187,9 @@ async function handleCheckinLivre(button, force = false) {
             } else {
                 alert(`Presença registrada em ${dateBr}.`);
             }
+            // Recarregar página após sucesso (não restaurar estado aqui)
             location.reload();
+            return; // Não continuar após reload
         } else if (result.error) {
             const errorMsg = result.error || 'Erro ao marcar presença.';
             if (typeof window.showAlert === 'function') {
@@ -172,9 +197,14 @@ async function handleCheckinLivre(button, force = false) {
             } else {
                 alert(errorMsg);
             }
+            // Restaurar estado em caso de erro
+            AppState.setProcessingCheckin(false);
+            button.disabled = false;
+            button.innerHTML = originalHtml;
         } else {
             console.warn('[handleCheckinLivre] Resposta inesperada, recarregando página');
             location.reload();
+            return; // Não continuar após reload
         }
     } catch (error) {
         console.error('Erro ao enviar checkin livre:', error);
@@ -184,12 +214,12 @@ async function handleCheckinLivre(button, force = false) {
         } else {
             alert(errorMsg);
         }
-    } finally {
-        // Restaurar estado apenas se não recarregou a página
+        // Restaurar estado apenas em caso de erro (se não recarregou a página)
         AppState.setProcessingCheckin(false);
         button.disabled = false;
         button.innerHTML = originalHtml;
     }
+    // Nota: Se sucesso, a página recarrega, então não precisamos restaurar estado
 }
 
 
@@ -228,7 +258,10 @@ function setupCheckinLivreButton(button, checkins) {
 
     // Remover event listeners anteriores para evitar duplicação
     const newButton = button.cloneNode(true);
-    button.parentNode.replaceChild(newButton, button);
+    const parent = button.parentNode;
+    if (parent) {
+        parent.replaceChild(newButton, button);
+    }
     button = newButton;
 
     const todayIso = getTodayISO();
@@ -253,11 +286,34 @@ function setupCheckinLivreButton(button, checkins) {
         button.innerHTML = '<i class="fas fa-check"></i> Já fez check-in hoje (clique para confirmar outro)';
     }
 
-    button.addEventListener('click', (e) => {
+    // Adicionar listener com prevenção de cliques múltiplos
+    let isHandling = false;
+    button.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
+        
+        // Prevenir cliques múltiplos rápidos
+        if (isHandling || AppState.processingCheckin) {
+            console.log('[setupCheckinLivreButton] Já está processando, ignorando clique');
+            return;
+        }
+        
+        isHandling = true;
         console.log('[setupCheckinLivreButton] Botão clicado, hasFreeToday:', hasFreeToday);
-        handleCheckinLivre(button, hasFreeToday);
+        
+        try {
+            await handleCheckinLivre(button, hasFreeToday);
+        } catch (error) {
+            console.error('[setupCheckinLivreButton] Erro ao processar check-in:', error);
+            // Restaurar estado em caso de erro
+            button.disabled = false;
+            AppState.setProcessingCheckin(false);
+        } finally {
+            // Resetar flag após um pequeno delay para permitir que o processamento termine
+            setTimeout(() => {
+                isHandling = false;
+            }, 500);
+        }
     });
 }
 
@@ -513,6 +569,7 @@ function showActionModal(horarioId) {
 
     AppState.setModalOpen(true);
     modal.style.display = 'flex';
+    modal.classList.add('active');
 
     // Remover event listeners antigos (se existirem)
     const newBtnConfirmar = btnConfirmar.cloneNode(true);
@@ -528,6 +585,7 @@ function showActionModal(horarioId) {
     // Função para fechar modal
     const hideModal = () => {
         modal.style.display = 'none';
+        modal.classList.remove('active');
         AppState.setModalOpen(false);
     };
 
@@ -560,24 +618,25 @@ function createActionModal() {
     const modal = document.createElement('div');
     modal.id = 'action-modal';
     modal.className = 'custom-confirm-modal';
-    modal.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;z-index:100000;background:rgba(0,0,0,0.45);';
+    modal.style.display = 'none';
 
     modal.innerHTML = `
-        <div class="custom-confirm-modal-content" style="position:relative;background:#fff;color:#111;border-radius:8px;max-width:520px;width:90%;box-shadow:0 12px 36px rgba(0,0,0,0.25);padding:1rem;z-index:1;">
-            <div style="white-space:pre-wrap;font-size:1rem;margin-bottom:.75rem;" id="action-modal-body">
+        <div class="custom-confirm-backdrop"></div>
+        <div class="custom-confirm-modal-content">
+            <div id="action-modal-body" class="custom-confirm-body">
                 Escolha uma ação para este horário:
             </div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
-                <button id="action-confirmar" style="padding:.45rem .8rem;border-radius:4px;cursor:pointer;background:#007bff;color:#fff;border:none;">
+            <div class="modal-buttons">
+                <button id="action-confirmar" class="btn-confirm">
                     <i class="fas fa-check"></i> Confirmar presença
                 </button>
-                <button id="action-editar" style="padding:.45rem .8rem;border-radius:4px;cursor:pointer;background:transparent;border:1px solid #ccc;">
+                <button id="action-editar" class="btn-edit">
                     <i class="fas fa-edit"></i> Editar horário
                 </button>
-                <button id="action-excluir" style="padding:.45rem .8rem;border-radius:4px;cursor:pointer;background:transparent;border:1px solid #ccc;">
+                <button id="action-excluir" class="btn-delete">
                     <i class="fas fa-trash"></i> Excluir horário
                 </button>
-                <button id="action-cancel" style="padding:.45rem .8rem;border-radius:4px;cursor:pointer;background:transparent;border:1px solid #ccc;">
+                <button id="action-cancel" class="btn-cancel">
                     Cancelar
                 </button>
             </div>

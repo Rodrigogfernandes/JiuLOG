@@ -1,80 +1,6 @@
-:root {
-    /* Cores principais */
-    --primary-color: #e60000;
-    --primary-hover: #b30000;
-    --secondary-color: #667eea;
-    --secondary-hover: #764ba2;
-    --accent-color: #ff4444;    
-    --success-color: #28a745;
-    --success-hover: #218838;
-    
+/* Estilos específicos do dashboard do aluno - Usa variáveis do theme.css */
 
-    /* Cores de fundo */
-    --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --bg-secondary: rgba(255, 255, 255, 0.95);
-    --bg-card: rgba(255, 255, 255, 0.9);
-
-    /* Cores de texto */
-    --text-primary: #333;
-    --text-secondary: #666;
-    --text-light: #999;
-    --text-white: #fff;
-
-    /* Sombras */
-    --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.1);
-    --shadow-medium: 0 8px 20px rgba(0, 0, 0, 0.15);
-    --shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.1);
-
-    /* Bordas */
-    --border-radius: 10px;
-    --border-radius-small: 8px;
-    --border-radius-large: 25px;
-    --border-radius-abas: 0 0 15px 15px;
-
-    /* Transições */
-    --transition: all 0.3s ease;
-    --transition-fast: all 0.2s ease;
-}
-
-
-body {
-    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--bg-primary);
-    min-height: 100vh;
-    color: var(--text-primary);
-    line-height: 1.6;
-    overflow-x: hidden;
-}
-
-header {
-    background: #e60000;
-    color: #fff;
-    padding: 5px 15px;
-    text-align: center;
-    position: relative;
-    max-width: 1200px;
-    width: 95%;
-    margin: 10px auto;
-    /* necessário para o botão flutuar */
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-
-.faixa {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-weight: bold;
-    display: inline-block;
-}
-
-/* Cores */
+/* Faixas de jiu-jitsu - cores específicas */
 .faixa-branca {
     background: #fff;
     color: #000;
@@ -108,48 +34,21 @@ header {
     align-items: center;
     gap: 10px;
     font-size: 0.9em;
-
-    .aluno-faixa {
-
-        padding: 5px 10px;
-        border-radius: 50px;
-        border: none;
-    }
-
-    .aluno-grau {
-        padding: 5px 10px;
-        border-radius: 50px;
-        border: none;
-    }
 }
 
-
-.container {
-    padding: 20px;
+.aluno-faixa {
+    padding: 5px 10px;
+    border-radius: 50px;
+    border: none;
 }
 
-/* Horários e check-ins */
-.horario,
-.checkin {
-    border: 1px solid #e60000;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+.aluno-grau {
+    padding: 5px 10px;
+    border-radius: 50px;
+    border: none;
 }
 
-/* Horário já marcado */
-.horario.checkin-feito {
-    background-color: #ff9999;
-    /* vermelho claro */
-    color: #fff;
-    border: 1px solid #b30000;
-}
-
-.horario.checkin-feito button {
-    display: none;
-}
-
+/* Ajustes específicos de layout do aluno */
 .conta-form {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
@@ -159,63 +58,8 @@ header {
     max-width: 95%;
 }
 
-.form-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    gap: 10px;
-   
-}
-.form-actions .btn-primary1 {
-    background: var(--success-color) !important;
-    color: #fff !important;
-    font-size: 0.6rem;
-    width: 100% !important;
-}
-.form-actions .btn-primary1:hover {
-    background: var(--success-hover) !important;
-    color: #fff !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 15px rgba(40, 167, 69, 0.4) !important;
-}
-
-.form-actions .btn-danger1 {
-    background: #dc3545 !important;
-    color: #fff !important;
-    font-size: 0.6rem;
-    width: 100% !important;
-}
-.form-actions .btn-danger1:hover {
-    background: #c82333 !important;
-    color: #fff !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 15px rgba(220, 53, 69, 0.4) !important;
-}
-
-.form-actions .btn:hover::before {
-    display: none !important;
-}
-
-
-.conta-form input,
-textarea {
-    width: 100%;
-    padding: 0.5rem;
-    border: 2px solid #e1e5e9;
-    border-radius: var(--border-radius-small);
-    font-size: 1rem;
-    transition: var(--transition);
-    background: var(--bg-card);
-    color: var(--text-primary);
-}
-
-.form-label {
-    font-size: .75rem !important;
-    background: gainsboro;
-    text-align: center;
-    color: navy !important;
-    margin-top: -.5rem;
-    border: 1px solid rgb(228 10 10);
-    border-radius: 5px;
-    padding: 0.5rem;
+@media (max-width: 768px) {
+    .conta-form {
+        grid-template-columns: 1fr;
+    }
 }
