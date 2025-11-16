@@ -1,4 +1,9 @@
-# JiuLOG - Sistema de Gestão para Academia de Jiu-Jitsu
+<div align="center">
+
+<h1>JiuLOG - Sistema de Gestão para Academia de Jiu-Jitsu</h1>
+
+![Imagem](assets/images/image.gif)
+
 
 [![PHP](https://img.shields.io/badge/PHP-8.0+-blue)](https://www.php.net/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0+-blue)](https://www.mysql.com/)
@@ -6,6 +11,14 @@
 [![CSS3](https://img.shields.io/badge/CSS3-blue)](https://developer.mozilla.org/pt-BR/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow)](https://developer.mozilla.org/pt-BR/docs/Web/JavaScript)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+
+[![rodrigodev.net](https://img.shields.io/badge/rodrigodev.net-gree?style=for-the-badge&logo=rodrigodev&logoColor=white)](https://www.rodrigodev.net/)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rodrigogfernandes)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rodrigogfernandes/)
+[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/rodrigogfernandes1/)
+
+</div>
 
 **JiuLOG** é um sistema completo de gestão para academias de Jiu-Jitsu, oferecendo controle de presenças, gerenciamento de alunos, professores e academias, com interface responsiva e moderna.
 
